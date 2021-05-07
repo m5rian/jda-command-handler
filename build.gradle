@@ -1,0 +1,88 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'com.github.m5rian'
+archivesBaseName = 'JdaCommandHandler'
+version = "0.2"
+
+sourceCompatibility = 1.15
+targetCompatibility = 1.15
+
+repositories {
+    mavenCentral()
+
+    // this before jcenter to cache my own repos
+    maven {
+        url = "https://m5rian.jfrog.io/artifactory/java"
+    }
+
+
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
+
+    jcenter()
+}
+
+dependencies {
+    api group: 'net.dv8tion', name: 'JDA', version: '4.2.1_259' // JDA
+    api group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3' // Logback classic
+}
+
+javadoc {
+    failOnError = false
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.author()
+    options.encoding = 'UTF-8'
+    options.addStringOption('-html5')
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    getArchiveClassifier().set('javadoc')
+    from javadoc.destinationDir
+}
+
+build {
+    dependsOn clean
+    dependsOn jar
+    dependsOn javadocJar
+
+    jar.mustRunAfter clean
+    javadocJar.mustRunAfter jar
+}
+
+publish {
+    dependsOn build
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            artifactId archivesBaseName
+            groupId project.group
+            version project.version
+
+            artifact javadocJar
+        }
+    }
+    repositories {
+        maven {
+            name = "jfrog"
+            url = "https://m5rian.jfrog.io/artifactory/java"
+            credentials {
+                username = System.getenv("JFrog_username")
+                password = System.getenv("JFrog_password")
+            }
+        }
+    }
+}
+
+wrapper {
+    gradleVersion = '6.8'
+    distributionType = Wrapper.DistributionType.ALL
+}

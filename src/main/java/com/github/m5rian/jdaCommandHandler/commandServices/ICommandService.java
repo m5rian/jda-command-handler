@@ -1,0 +1,119 @@
+package com.github.m5rian.jdaCommandHandler.commandServices;
+
+import com.github.m5rian.jdaCommandHandler.*;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+
+import java.lang.reflect.Method;
+import java.util.*;
+
+/**
+ * @author Marian
+ * <p>
+ * This is the basic interface, which all CommandServices have implemented.
+ */
+@SuppressWarnings("unused")
+public interface ICommandService {
+    /**
+     * Stores all registered commands.
+     */
+    Map<MethodInfo, CommandEvent> commands = new HashMap<>();
+    /**
+     * new one
+     */
+    List<MethodInfo> commandsNew = new ArrayList<>();
+
+    /**
+     * Stores the {@link EventWaiter}.
+     */
+    EventWaiter eventWaiter = new EventWaiter();
+
+    /**
+     * @return Returns an {@link EventWaiter}
+     */
+    default EventWaiter getEventWaiter() {
+        return eventWaiter;
+    }
+
+    /**
+     * Register a class with command methods.
+     * <p>A method which you wish to be a command must have the {@link CommandEvent} annotation</p>
+     *
+     * @param object The initialized object where command methods are.
+     */
+    default void registerCommandClass(CommandHandler object) {
+        // Go through each method
+        for (Method method : object.getClass().getMethods()) {
+            // Method is command
+            if (method.isAnnotationPresent(CommandEvent.class)) {
+                final CommandEvent annotation = method.getAnnotation(CommandEvent.class); // Get command annotation
+                final MethodInfo methodInfo = new MethodInfo(object, method, annotation); // Create method info object
+                commandsNew.add(methodInfo); // Put command in list
+            }
+        }
+    }
+
+    /**
+     * Register more than one class with command methods.
+     * <p>A method which you wish to be a command must have the {@link CommandEvent} annotation</p>
+     *
+     * @param objects The initialized objects where command methods are.
+     */
+    default void registerCommandClasses(CommandHandler... objects) {
+        // Go through each class
+        for (CommandHandler object : objects) {
+            registerCommandClass(object); // Register command
+        }
+    }
+
+    /**
+     * Unregister a command class.
+     * <p>A method which you wish to be a command must have the {@link CommandEvent} annotation</p>
+     *
+     * @param object The initialized object where to unregister all command methods.
+     */
+    default void unregisterCommandClass(CommandHandler object) {
+        // For every item
+        this.commands.forEach((key, value) -> {
+            // Instance is equal to given object
+            if (key.getInstance() == object) {
+                this.commands.remove(key); // Remove method
+            }
+        });
+    }
+
+    /**
+     * Unregister all registered commands.
+     */
+    default void unregisterAllCommands() {
+        this.commands.clear();
+    }
+
+    /**
+     * @return Returns a Map with all registered commands.
+     */
+    default Map<MethodInfo, CommandEvent> getCommands() {
+        return this.commands;
+    }
+
+    /**
+     * @param method The command method
+     * @return Returns a list of all executors from a command. The command doesn't need to be registered.
+     */
+    default List<String> getCommandExecutors(Method method) {
+        final CommandEvent commandInfo = method.getAnnotation(CommandEvent.class); // Get annotation
+        final List<String> executors = new ArrayList<>(); // Create list for executors
+
+        executors.add(commandInfo.name()); // Add command name
+        Collections.addAll(executors, commandInfo.aliases()); // Add aliases
+
+        return executors; // Return list with all executors
+    }
+
+    /**
+     * Runs once a message received.
+     *
+     * @param event The MessageReceivedEvent.
+     * @throws Exception Any exceptions will be thrown to the {@link CommandListener}.
+     */
+    void processCommandExecution(MessageReceivedEvent event) throws Exception;
+}

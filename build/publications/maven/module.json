@@ -1,0 +1,93 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.github.m5rian",
+    "module": "JdaCommandHandler",
+    "version": "0.2",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.8.3",
+      "buildId": "pg7soihdhbei7oap5e3wbab4fu"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 15,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "net.dv8tion",
+          "module": "JDA",
+          "version": {
+            "requires": "4.2.1_259"
+          }
+        },
+        {
+          "group": "ch.qos.logback",
+          "module": "logback-classic",
+          "version": {
+            "requires": "1.2.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "JdaCommandHandler-0.2.jar",
+          "url": "JdaCommandHandler-0.2.jar",
+          "size": 19975,
+          "sha512": "09f0dcb369401eb8557bff0d1bef9dd8b5f627c5dfbf37a81bc4dd5e6318601a887d20cd1f175bf2af3e0056da204e6d40d6e96f652199b411826fd926fd060e",
+          "sha256": "12e8daf9a7376711300919e21eec9b574632e3b436c7b7acf88439a25c55d6d3",
+          "sha1": "32370bc279096b242aa6bff90d7ba35236228915",
+          "md5": "2f75e90bbabf229f449cb734e86d9856"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 15,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.dv8tion",
+          "module": "JDA",
+          "version": {
+            "requires": "4.2.1_259"
+          }
+        },
+        {
+          "group": "ch.qos.logback",
+          "module": "logback-classic",
+          "version": {
+            "requires": "1.2.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "JdaCommandHandler-0.2.jar",
+          "url": "JdaCommandHandler-0.2.jar",
+          "size": 19975,
+          "sha512": "09f0dcb369401eb8557bff0d1bef9dd8b5f627c5dfbf37a81bc4dd5e6318601a887d20cd1f175bf2af3e0056da204e6d40d6e96f652199b411826fd926fd060e",
+          "sha256": "12e8daf9a7376711300919e21eec9b574632e3b436c7b7acf88439a25c55d6d3",
+          "sha1": "32370bc279096b242aa6bff90d7ba35236228915",
+          "md5": "2f75e90bbabf229f449cb734e86d9856"
+        }
+      ]
+    }
+  ]
+}

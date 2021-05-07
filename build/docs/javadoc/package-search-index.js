@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.github.m5rian.jdaCommandHandler"},{"l":"com.github.m5rian.jdaCommandHandler.commandServices"},{"l":"com.github.m5rian.jdaCommandHandler.exceptions"}];updateSearchResults();
