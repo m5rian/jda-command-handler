@@ -11,7 +11,7 @@
   "createdBy": {
     "gradle": {
       "version": "6.8.3",
-      "buildId": "pg7soihdhbei7oap5e3wbab4fu"
+      "buildId": "5p5vi2zurfc4rd5my4wxiecp5i"
     }
   },
   "variants": [
@@ -44,11 +44,11 @@
         {
           "name": "JdaCommandHandler-0.2.jar",
           "url": "JdaCommandHandler-0.2.jar",
-          "size": 19975,
-          "sha512": "09f0dcb369401eb8557bff0d1bef9dd8b5f627c5dfbf37a81bc4dd5e6318601a887d20cd1f175bf2af3e0056da204e6d40d6e96f652199b411826fd926fd060e",
-          "sha256": "12e8daf9a7376711300919e21eec9b574632e3b436c7b7acf88439a25c55d6d3",
-          "sha1": "32370bc279096b242aa6bff90d7ba35236228915",
-          "md5": "2f75e90bbabf229f449cb734e86d9856"
+          "size": 19866,
+          "sha512": "b76869138436ae1e521e4a0f1ba7b61867df94a376fcc10f2432f3ea63393ac966dabd1bffffc8bc2f27301f675d25a6590554bf49b4ccd59ca48ec7710b4210",
+          "sha256": "c0edfe570e7b64e9f401eda8f4bbc51764533e1536613d590863be25aa737f45",
+          "sha1": "a8781a2cc8a6687530e4b61b93483907c40d0413",
+          "md5": "c868ad57452072644b9aae9ec295f18d"
         }
       ]
     },
@@ -81,11 +81,11 @@
         {
           "name": "JdaCommandHandler-0.2.jar",
           "url": "JdaCommandHandler-0.2.jar",
-          "size": 19975,
-          "sha512": "09f0dcb369401eb8557bff0d1bef9dd8b5f627c5dfbf37a81bc4dd5e6318601a887d20cd1f175bf2af3e0056da204e6d40d6e96f652199b411826fd926fd060e",
-          "sha256": "12e8daf9a7376711300919e21eec9b574632e3b436c7b7acf88439a25c55d6d3",
-          "sha1": "32370bc279096b242aa6bff90d7ba35236228915",
-          "md5": "2f75e90bbabf229f449cb734e86d9856"
+          "size": 19866,
+          "sha512": "b76869138436ae1e521e4a0f1ba7b61867df94a376fcc10f2432f3ea63393ac966dabd1bffffc8bc2f27301f675d25a6590554bf49b4ccd59ca48ec7710b4210",
+          "sha256": "c0edfe570e7b64e9f401eda8f4bbc51764533e1536613d590863be25aa737f45",
+          "sha1": "a8781a2cc8a6687530e4b61b93483907c40d0413",
+          "md5": "c868ad57452072644b9aae9ec295f18d"
         }
       ]
     }

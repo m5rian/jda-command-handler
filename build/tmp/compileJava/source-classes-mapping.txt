@@ -24,6 +24,8 @@ com/github/m5rian/jdaCommandHandler/commandServices/DefaultCommandService.java
  com.github.m5rian.jdaCommandHandler.commandServices.DefaultCommandService$1
 com/github/m5rian/jdaCommandHandler/MethodInfo.java
  com.github.m5rian.jdaCommandHandler.MethodInfo
+com/github/m5rian/jdaCommandHandler/CommandUtils.java
+ com.github.m5rian.jdaCommandHandler.CommandUtils
 com/github/m5rian/jdaCommandHandler/Channel.java
  com.github.m5rian.jdaCommandHandler.Channel
 com/github/m5rian/jdaCommandHandler/commandServices/ICommandService.java
