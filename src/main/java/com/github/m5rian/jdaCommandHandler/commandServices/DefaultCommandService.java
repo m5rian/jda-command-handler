@@ -2,6 +2,7 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 
 import com.github.m5rian.jdaCommandHandler.Channel;
 import com.github.m5rian.jdaCommandHandler.CommandContext;
+import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.Everyone;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import net.dv8tion.jda.api.entities.ChannelType;
@@ -59,19 +60,16 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.commandsNew.parallelStream().forEach(command -> {
             try {
 
-                System.out.println(command.getCommand().name());
-                System.out.println(msg);
                 boolean hasPermissions = hasPermissions(event.getMember(), command.getCommand().requires());// Does the member have the required permission?
                 boolean rightChannel = isType(command.getCommand().channel(), event); // Was the command executed in the right channel?
 
                 if (rightChannel && hasPermissions) {
-                    final List<String> executors = getCommandExecutors(command.getMethod()); // Get all command executors
+                    final List<String> executors = CommandUtils.getCommandExecutors(command.getMethod()); // Get all command executors
                     // Check for every command executor
                     for (String executor : executors) {
                         final String regex = "(?i)" + executor + "($|\s.*)"; // Command regex
                         // Message matches command regex
                         if (msg.matches(regex)) {
-                            System.out.println("COMMAND FIRED");
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
 
