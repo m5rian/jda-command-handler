@@ -1,11 +1,11 @@
 package com.github.m5rian.jdaCommandHandler;
 
-import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -35,16 +35,13 @@ public class EventWaiter implements EventListener {
     public void onEvent(@NotNull GenericEvent action) {
         // Search for event
         for (Settings waiter : waiters) {
-            final Class<?> event = waiter.type; // Get event type as class
-            final Settings settings = waiter; // Get event waiter settings
-
-            if (event == action.getClass()) { // Waiting event matches with action
+            if (waiter.type == action.getClass()) { // Waiting event matches with action
                 // Condition is met or no condition set
-                if (settings.condition == null || settings.condition.test(action)) {
-                    settings.action.accept(action); // Run callback
+                if (waiter.condition == null || waiter.condition.test(action)) {
+                    waiter.action.accept(action); // Run callback
 
                     // Remove waiter, if action doesn't remain
-                    if (!settings.remainAction) waiters.remove(event);
+                    if (!waiter.remainAction) waiters.remove(waiter);
                 }
             }
         }
@@ -58,7 +55,7 @@ public class EventWaiter implements EventListener {
      * @param <T>  T
      * @return Returns {@link Settings} to change settings on the waiters behavior.
      */
-    public <T extends Event> Settings<T> waitForEvent(Class<T> type) {
+    public <T extends GenericEvent> Settings<T> waitForEvent(Class<T> type) {
         return new Settings<>(type);
     }
 
@@ -66,7 +63,7 @@ public class EventWaiter implements EventListener {
      * With this class you can set up specific settings for the waiter.
      * To actually register a new event waiter you must call the {@link Settings#load()} method.
      */
-    public class Settings<T extends Event> {
+    public class Settings<T> {
         private final Class<T> type; // Event class to wait for
         private Predicate<T> condition; // Condition, which needs to be true in order to run the action
         private Consumer<T> action; // Action, which runs once the event fires
@@ -81,7 +78,7 @@ public class EventWaiter implements EventListener {
          *
          * @param type Event class to wait for.
          */
-        public Settings(Class<T> type) {
+        public Settings(Class type) {
             this.type = type;
         }
 
