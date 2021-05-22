@@ -3,7 +3,7 @@
   "component": {
     "group": "com.github.m5rian",
     "module": "JdaCommandHandler",
-    "version": "0.2",
+    "version": "development",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -11,7 +11,7 @@
   "createdBy": {
     "gradle": {
       "version": "6.8.3",
-      "buildId": "5p5vi2zurfc4rd5my4wxiecp5i"
+      "buildId": "wazoakckvvfrboi2xsgatf3uou"
     }
   },
   "variants": [
@@ -42,13 +42,13 @@
       ],
       "files": [
         {
-          "name": "JdaCommandHandler-0.2.jar",
-          "url": "JdaCommandHandler-0.2.jar",
-          "size": 19866,
-          "sha512": "b76869138436ae1e521e4a0f1ba7b61867df94a376fcc10f2432f3ea63393ac966dabd1bffffc8bc2f27301f675d25a6590554bf49b4ccd59ca48ec7710b4210",
-          "sha256": "c0edfe570e7b64e9f401eda8f4bbc51764533e1536613d590863be25aa737f45",
-          "sha1": "a8781a2cc8a6687530e4b61b93483907c40d0413",
-          "md5": "c868ad57452072644b9aae9ec295f18d"
+          "name": "JdaCommandHandler-development.jar",
+          "url": "JdaCommandHandler-development.jar",
+          "size": 20370,
+          "sha512": "986f786dad9e724fb9fe398b44785cdbd6e1dbe750563a167e4575951a2829ccb6d74e4a9238a2e79edf31521da244b4aa5f393d7a724627aa2e7f80a2c08269",
+          "sha256": "be45e300415ea4b52bc379bfba5581be604b9b892e846791db18c6584b3d38ee",
+          "sha1": "b13e6ae111d07383ba78da9d405aa37c795dafd0",
+          "md5": "7e198d07d5f46948f5446536497796db"
         }
       ]
     },
@@ -79,13 +79,13 @@
       ],
       "files": [
         {
-          "name": "JdaCommandHandler-0.2.jar",
-          "url": "JdaCommandHandler-0.2.jar",
-          "size": 19866,
-          "sha512": "b76869138436ae1e521e4a0f1ba7b61867df94a376fcc10f2432f3ea63393ac966dabd1bffffc8bc2f27301f675d25a6590554bf49b4ccd59ca48ec7710b4210",
-          "sha256": "c0edfe570e7b64e9f401eda8f4bbc51764533e1536613d590863be25aa737f45",
-          "sha1": "a8781a2cc8a6687530e4b61b93483907c40d0413",
-          "md5": "c868ad57452072644b9aae9ec295f18d"
+          "name": "JdaCommandHandler-development.jar",
+          "url": "JdaCommandHandler-development.jar",
+          "size": 20370,
+          "sha512": "986f786dad9e724fb9fe398b44785cdbd6e1dbe750563a167e4575951a2829ccb6d74e4a9238a2e79edf31521da244b4aa5f393d7a724627aa2e7f80a2c08269",
+          "sha256": "be45e300415ea4b52bc379bfba5581be604b9b892e846791db18c6584b3d38ee",
+          "sha1": "b13e6ae111d07383ba78da9d405aa37c795dafd0",
+          "md5": "7e198d07d5f46948f5446536497796db"
         }
       ]
     }

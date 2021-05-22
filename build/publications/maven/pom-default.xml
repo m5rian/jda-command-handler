@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.m5rian</groupId>
   <artifactId>JdaCommandHandler</artifactId>
-  <version>0.2</version>
+  <version>development</version>
   <dependencies>
     <dependency>
       <groupId>net.dv8tion</groupId>
