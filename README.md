@@ -2,9 +2,9 @@
 This library makes handling commands very easy.  
 It's simple to add aliases, required permissions or specifying the command for only one type.
 
-#🏷 Summary
-* [Installation](#📀-Installation)
-* [Dependencies](#📌-Dependencies)
+# 🏷 Summary
+* [Installation](#📀-installation)
+* [Dependencies](#📌-dependencies)
 
 # 📀 Installation
 > **🐘 Gradle**
