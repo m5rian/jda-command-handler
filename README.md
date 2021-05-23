@@ -1,12 +1,12 @@
-#🪁 Command handler
+# 🪁 Command handler
 This library makes handling commands very easy.  
-It's simple to add aliases, required permissions or specifying the command for only one type.  
+It's simple to add aliases, required permissions or specifying the command for only one type.
 
 #🏷 Summary
 * [Installation](#📀-Installation)
-* [Dependencies](#🪡-Dependencies)
+* [Dependencies](#📌-Dependencies)
 
-#📀 Installation
+# 📀 Installation
 > **🐘 Gradle**
 ```gradle
 maven {
@@ -36,6 +36,6 @@ maven {
 </dependency>
 ```
 
-# 🪡 Dependencies
+# 📌 Dependencies
 * [JDA](https://github.com/DV8FromTheWorld/JDA)
 * [Logback-classic](http://logback.qos.ch/)
