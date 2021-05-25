@@ -3,9 +3,9 @@ This library makes handling commands very easy.
 It's simple to add aliases, required permissions or specifying the command for only one type.
 
 ## 🏷 Summary
-* [Installation](#📀-installation)
-* [Dependencies](#🏗️-Adding-a-basic-command-handler)
-* [Dependencies](#📌-dependencies)
+* [Installation](#-installation)
+* [Dependencies](#%EF%B8%8F-adding-a-basic-command-handler)
+* [Dependencies](#-dependencies)
 
 ## 📀 Installation
 > **🐘 Gradle**
@@ -50,14 +50,14 @@ public class Bot {
             // If you don't specify a variable prefix, the default prefix will be used instead
             .setVariablePrefix(guild -> Database.getGuild(guild).getPrefix())
             .build();
-    
+
     public static void main(String[] args) {
         JDABuilder.createDefault(Config.get().getString("token"))
                 // Register the CommandListener
                 // Without it the bot won't respond on any commands
                 .addEventListeners(new CommandListener(commandService))
                 .build();
-        
+
         // Register a command
         commandService.registerCommandClass(new Ping());
     }
