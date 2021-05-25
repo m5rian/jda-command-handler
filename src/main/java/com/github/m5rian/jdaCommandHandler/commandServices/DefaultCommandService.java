@@ -4,6 +4,8 @@ import com.github.m5rian.jdaCommandHandler.Channel;
 import com.github.m5rian.jdaCommandHandler.CommandContext;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.Everyone;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -30,13 +32,19 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      * @param customPrefix  A variable prefix, which can depend on each guild.
      * @param allowMention  Should the bot respond on mentions too?
      */
-    public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention) {
+    public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
+                                 CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
 
         this.defaultPrefix = defaultPrefix;
         this.customPrefix = customPrefix;
         this.allowMention = allowMention;
+        // Set command factories
+        this.commandMessageFactories.setInfoFactory(infoFactory);
+        this.commandMessageFactories.setWarningFactory(warningFactory);
+        this.commandMessageFactories.setErrorFactory(errorFactory);
+        this.commandMessageFactories.setCommandUsageFactory(usageFactory);
 
         this.registerPermission(new Everyone()); // Register default role
     }
@@ -73,21 +81,21 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
 
-                            command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, this.getEventWaiter())); // Run command
+                            command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, command, this)); // Run command
                             break; // Only run command once
                         }
                     }
                 }
 
-            } catch (IllegalAccessException e){
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
             // A required permissions isn't registered
-            catch (NotRegisteredException notRegisteredException){
+            catch (NotRegisteredException notRegisteredException) {
                 notRegisteredException.printStackTrace();
             }
             // Error is thrown in the original method
-            catch (InvocationTargetException e){
+            catch (InvocationTargetException e) {
                 e.getCause().printStackTrace();
             }
         });
@@ -119,4 +127,5 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
             }
         }
     }
+
 }

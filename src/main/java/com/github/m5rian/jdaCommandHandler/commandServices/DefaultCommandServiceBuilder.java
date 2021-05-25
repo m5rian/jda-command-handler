@@ -1,6 +1,7 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
-import net.dv8tion.jda.api.JDA;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.function.Function;
@@ -13,6 +14,10 @@ public class DefaultCommandServiceBuilder {
     private String defaultPrefix;
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
+    private CommandMessageFactory infoFactory;
+    private CommandMessageFactory warningFactory;
+    private CommandMessageFactory errorFactory;
+    private CommandUsageFactory usageFactory;
 
     /**
      * Set the default prefix.
@@ -53,6 +58,26 @@ public class DefaultCommandServiceBuilder {
         return this;
     }
 
+    public DefaultCommandServiceBuilder setInfoFactory(CommandMessageFactory infoFactory) {
+        this.infoFactory = infoFactory;
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder setWarningFactory(CommandMessageFactory infoFactory) {
+        this.infoFactory = infoFactory;
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder setErrorFactory(CommandMessageFactory infoFactory) {
+        this.infoFactory = infoFactory;
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder setUsageFactory(CommandUsageFactory usageFactory) {
+        this.usageFactory = usageFactory;
+        return this;
+    }
+
     /**
      * Build the command service.
      *
@@ -63,7 +88,12 @@ public class DefaultCommandServiceBuilder {
         return new DefaultCommandService(
                 this.defaultPrefix,
                 this.customPrefix,
-                this.allowMention
+                this.allowMention,
+
+                this.infoFactory,
+                this.warningFactory,
+                this.errorFactory,
+                this.usageFactory
         );
     }
 }

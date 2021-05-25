@@ -1,5 +1,6 @@
 package com.github.m5rian.jdaCommandHandler;
 
+import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -7,7 +8,6 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 /**
  * This class contains all information about an executed command.
@@ -19,6 +19,10 @@ public class CommandContext {
     private final MessageReceivedEvent event; // The actual event
     private final String[] arguments; // Arguments, split in spaces
     private final String argumentsRaw; // Non-split arguments
+
+    private final MethodInfo methodInfo; // The command service
+    private final ICommandService commandService; // Used command service
+
     private final EventWaiter waiter; // Event waiter
 
     /**
@@ -27,15 +31,16 @@ public class CommandContext {
      * @param prefix    Used prefix.
      * @param event     The MessageReceivedEvent.
      * @param arguments message, without the executor.
-     * @param waiter    Event waiter
      */
-    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, EventWaiter waiter) {
+    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, MethodInfo methodInfo, ICommandService commandService) {
         this.prefix = prefix;
         this.event = event;
         if (arguments.equals("")) this.arguments = new String[0]; // If there no arguments, make an empty array
         else this.arguments = arguments.split("\\s+"); // If there are arguments, split them in spaces
         this.argumentsRaw = arguments;
-        this.waiter = waiter;
+        this.methodInfo = methodInfo;
+        this.commandService = commandService;
+        this.waiter = commandService.getEventWaiter();
     }
 
     /**
@@ -97,6 +102,20 @@ public class CommandContext {
      */
     public String getArgumentsRaw() {
         return this.argumentsRaw;
+    }
+
+    /**
+     * @return Returns the {@link MethodInfo} of the invoked method.
+     */
+    public MethodInfo getMethodInfo() {
+        return this.methodInfo;
+    }
+
+    /**
+     * @return Returns the used {@link ICommandService}.
+     */
+    public ICommandService getCommandService() {
+        return this.commandService;
     }
 
     /**

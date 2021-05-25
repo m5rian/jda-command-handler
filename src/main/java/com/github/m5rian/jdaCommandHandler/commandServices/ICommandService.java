@@ -1,10 +1,16 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
 import com.github.m5rian.jdaCommandHandler.*;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessage;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactories;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marian
@@ -21,6 +27,8 @@ public interface ICommandService {
      * new one
      */
     List<MethodInfo> commandsNew = new ArrayList<>();
+
+    CommandMessageFactories commandMessageFactories = new CommandMessageFactories();
 
     /**
      * Stores the {@link EventWaiter}.
@@ -102,4 +110,21 @@ public interface ICommandService {
      * @throws Exception Any exceptions will be thrown to the {@link CommandListener}.
      */
     void processCommandExecution(MessageReceivedEvent event) throws Exception;
+
+    default CommandMessage executeInfo(CommandContext ctx) {
+        return this.commandMessageFactories.getInfoFactory().invoke(ctx);
+    }
+
+    default CommandMessage executeWarn(CommandContext ctx) {
+        return this.commandMessageFactories.getWarningFactory().invoke(ctx);
+    }
+
+    default CommandMessage executeError(CommandContext ctx) {
+        return this.commandMessageFactories.getErrorFactory().invoke(ctx);
+    }
+
+    default CommandUsage executeUsage(CommandContext ctx) {
+        return this.commandMessageFactories.getUsageFactory().invoke(ctx);
+    }
+
 }

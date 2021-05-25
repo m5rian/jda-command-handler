@@ -39,4 +39,34 @@ public @interface CommandEvent {
      * @return The channel type of the command.
      */
     Channel channel() default Channel.DEFAULT;
+
+    /**
+     * This is not used for any technical backend operations.
+     * <p>
+     * This can be used in a {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory}
+     * or {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory}.
+     *
+     * @return Returns required arguments for the command.
+     */
+    String args() default "";
+
+    /**
+     * This is not used for any technical backend operations.
+     * <p>
+     * This can be used in a {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory}
+     * or {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory}.
+     *
+     * @return Returns a small description on what the command does.
+     */
+    String description() default "";
+
+    /**
+     * This is not used for any technical backend operations.
+     * <p>
+     * This can be used in a {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory}
+     * or {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory}.
+     *
+     * @return Returns a matching emoji for the command.
+     */
+    String emoji() default "";
 }
