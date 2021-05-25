@@ -8,7 +8,10 @@ It's simple to add aliases, required permissions or specifying the command for o
 * [Dependencies](#-dependencies)
 
 ## 📀 Installation
-> **🐘 Gradle**
+`VERSION:` ![version]
+<br/>
+<br/>
+### **🐘 Gradle**
 ```gradle
 maven {
     url 'https://m5rian.jfrog.io/artifactory/java'
@@ -83,3 +86,5 @@ public class Ping implements CommandHandler {
 ## 📌 Dependencies
 * [JDA](https://github.com/DV8FromTheWorld/JDA)
 * [Logback-classic](http://logback.qos.ch/)
+
+[version]: https://img.shields.io/maven-metadata/v?metadataUrl=https://m5rian.jfrog.io/artifactory/java/com/github/m5rian/JdaCommandHandler/maven-metadata.xml
