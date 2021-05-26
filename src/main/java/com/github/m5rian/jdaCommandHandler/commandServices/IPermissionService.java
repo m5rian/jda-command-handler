@@ -88,7 +88,6 @@ public interface IPermissionService {
         if (roles.contains(Everyone.class)) return true; // Everyone permission
 
         Iterator<Class<? extends Permission>> iterator = roles.iterator(); // Get required roles
-        boolean hasPermissions = true;
 
         while (iterator.hasNext()) {
             final Class<? extends Permission> clazz = iterator.next(); // Get current permission class
@@ -97,38 +96,11 @@ public interface IPermissionService {
                 throw new NotRegisteredException(clazz.getSimpleName() + " isn't registered as a role. Please register this role in a CommandService");
             final Permission permission = getPermission(clazz); // Get current permission
 
-            if (permission.getUserId() != null) {
-                if (!member.getId().equals(permission.getUserId())) {
-                    hasPermissions = false;
-                    break;
-                }
-            }
-
-            if (!permission.getPermissions().isEmpty()) {
-                if (!member.hasPermission(permission.getPermissions())) {
-                    hasPermissions = false;
-                    break;
-                }
-            }
-
-            if (!permission.getRoleIds().isEmpty()) {
-                for (String roleId : permission.getRoleIds()) {
-                    if (member.getRoles().stream().noneMatch(r -> r.getId().equals(roleId))) {
-                        hasPermissions = false;
-                        break;
-                    }
-                }
-            }
-
-            if (!permission.getRoleIdsLong().isEmpty()) {
-                for (Long roleId : permission.getRoleIdsLong()) {
-                    if (member.getRoles().stream().noneMatch(r -> r.getIdLong() == roleId)) {
-                        hasPermissions = false;
-                        break;
-                    }
-                }
-            }
+            if (permission.getUserId() != null && !permission.getUserId().equals(member.getId())) return false;
+            if (!permission.getPermissions().isEmpty() && !member.hasPermission(permission.getPermissions())) return false;
+            if (!permission.getRoleIds().isEmpty() && permission.getRoleIds().stream().noneMatch(roleId -> member.getRoles().contains(member.getGuild().getRoleById(roleId)))) return false;
+            if (!permission.getRoleIdsLong().isEmpty() && permission.getRoleIdsLong().stream().noneMatch(roleId -> member.getRoles().contains(member.getGuild().getRoleById(roleId)))) return false;
         }
-        return hasPermissions;
+        return true;
     }
 }
