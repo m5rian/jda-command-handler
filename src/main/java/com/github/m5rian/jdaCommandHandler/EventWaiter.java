@@ -33,11 +33,10 @@ public class EventWaiter implements EventListener {
      */
     @Override
     public void onEvent(@NotNull GenericEvent action) {
-        final List<Settings> triggered = new ArrayList<>(); // Waiters to remove
-
-        // Search for event
-        for (Settings waiter : waiters) {
-            if (waiter.type == action.getClass()) { // Waiting event matches with action
+        final List<Settings> waitersCopy = new ArrayList<>(this.waiters); // Copy of current waiters to not interrupt the original ones
+        final List<Settings> triggered = new ArrayList<>(); // Waiters which got triggered and need to be removed
+        for (Settings waiter : waitersCopy) {
+            if (waiter.type == action.getClass()) { // Waiting event is same as triggered event
                 // Condition is met or no condition set
                 if (waiter.condition == null || waiter.condition.test(action)) {
                     waiter.action.accept(action); // Run callback
@@ -47,8 +46,6 @@ public class EventWaiter implements EventListener {
                 }
             }
         }
-
-        waiters.removeAll(triggered); // Remove all triggered waiters
     }
 
     /**
