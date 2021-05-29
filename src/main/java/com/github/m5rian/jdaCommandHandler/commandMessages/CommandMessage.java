@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -20,11 +21,13 @@ public class CommandMessage {
     private String title = null;
     private String thumbnail = null;
     private String image = null;
+    private Color colour = null;
     private String author = null;
     private String hyperLink = null;
     private String authorAvatar = null;
     private String description = null;
     private final List<MessageEmbed.Field> fields;
+    private String footer = null;
     // Other
     private final CommandContext ctx;
     private boolean reply;
@@ -51,11 +54,14 @@ public class CommandMessage {
             Function<CommandContext, String> title,
             Function<CommandContext, String> thumbnail,
             Function<CommandContext, String> image,
+            Function<CommandContext, Color> colour,
+            Function<CommandContext, String> hexColour,
             Function<CommandContext, String> author,
             Function<CommandContext, String> hyperLink,
             Function<CommandContext, String> authorAvatar,
             Function<CommandContext, String> description,
             List<Function<CommandContext, MessageEmbed.Field>> fields,
+            Function<CommandContext, String> footer,
             // Other
             CommandContext ctx,
             boolean reply
@@ -66,6 +72,8 @@ public class CommandMessage {
         if (title != null) this.title = title.apply(ctx);
         if (thumbnail != null) this.thumbnail = thumbnail.apply(ctx);
         if (image != null) this.image = image.apply(ctx);
+        if (colour != null) this.colour = colour.apply(ctx);
+        if (hexColour != null) this.colour = Color.decode(hexColour.apply(ctx));
         if (author != null) this.author = author.apply(ctx);
         if (hyperLink != null) this.hyperLink = hyperLink.apply(ctx);
         if (authorAvatar != null) this.authorAvatar = authorAvatar.apply(ctx);
@@ -73,6 +81,7 @@ public class CommandMessage {
         final List<MessageEmbed.Field> embedFields = new ArrayList<>(); // Create new list for fields
         fields.forEach(field -> embedFields.add(field.apply(ctx))); // Invoke each field to get it as a Field object
         this.fields = embedFields; // Set fields
+        if (this.footer != null) this.footer = footer.apply(ctx);
         // Other
         this.ctx = ctx;
         this.reply = reply;
@@ -141,6 +150,28 @@ public class CommandMessage {
      */
     public CommandMessage setImage(String image) {
         this.image = image;
+        return this;
+    }
+
+    /**
+     * Overrides the current {@link MessageEmbed#color}.
+     *
+     * @param colour The {@link MessageEmbed#color}.
+     * @return Returns the current {@link CommandMessage} for method chaining.
+     */
+    public CommandMessage setColour(Color colour) {
+        this.colour = colour;
+        return this;
+    }
+
+    /**
+     * Overrides the current {@link MessageEmbed#color}.
+     *
+     * @param hexColour The {@link MessageEmbed#color}.
+     * @return Returns the current {@link CommandMessage} for method chaining.
+     */
+    public CommandMessage setColourHex(String hexColour) {
+        this.colour = Color.decode(hexColour);
         return this;
     }
 
@@ -222,6 +253,17 @@ public class CommandMessage {
     }
 
     /**
+     * Overrides the current {@link CommandMessage#footer}
+     *
+     * @param footer The {@link MessageEmbed.Footer#text}.
+     * @return Returns the current {@link CommandMessage} for method chaining.
+     */
+    public CommandMessage setFooter(String footer) {
+        this.footer = footer;
+        return this;
+    }
+
+    /**
      * Overrides the current {@link CommandMessage#reply}.
      *
      * @param reply Should the message reply to the authors message?
@@ -245,14 +287,10 @@ public class CommandMessage {
         if (this.title != null && this.hyperLink == null) embed.setTitle(this.title);
         if (this.title != null && this.hyperLink != null) embed.setTitle(this.title, this.hyperLink);
 
-        if (this.author != null && this.hyperLink == null && this.authorAvatar == null) embed.setAuthor(this.author);
-        if (this.author != null && this.hyperLink != null && this.authorAvatar == null) embed.setAuthor(this.author, this.hyperLink);
-        System.out.println(this.author);
-        System.out.println(this.hyperLink);
-        System.out.println(this.authorAvatar);
-        if (this.author != null && this.hyperLink != null && this.authorAvatar != null) embed.setAuthor(this.author, this.hyperLink, this.authorAvatar);
-
+        if (this.colour != null) embed.setColor(this.colour);
+        if (this.author != null) embed.setAuthor(this.author, this.hyperLink, this.authorAvatar);
         if (this.description != null) embed.setDescription(this.description);
+        if (this.footer != null) embed.setFooter(this.footer);
 
         final MessageChannel channel = this.ctx.getChannel();
         if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
