@@ -35,7 +35,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      * @param allowMention  Should the bot respond on mentions too?
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
-                                 List<String> blacklist, Consumer<User> blacklistAddAction, Consumer<User> blacklistRemoveAction,
+                                 List<String> userBlacklist,
                                  CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
@@ -44,9 +44,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.customPrefix = customPrefix;
         this.allowMention = allowMention;
         // Blacklist
-        this.blacklist.addAll(blacklist); // Add already blacklisted users
-        this.blacklistHandler.blacklistAddAction = blacklistAddAction; // Assign add action
-        this.blacklistHandler.blacklistRemoveAction = blacklistRemoveAction; // Assign remove action
+        this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
         // Set command factories
         this.commandMessageFactories.setInfoFactory(infoFactory);
         this.commandMessageFactories.setWarningFactory(warningFactory);
@@ -58,7 +56,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
 
     @Override
     public void processCommandExecution(MessageReceivedEvent event) {
-        if (this.blacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
+        if (this.userBlacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
 
         final String rawMsg = event.getMessage().getContentRaw().replace("<@!", "<@"); // Get raw content
 
