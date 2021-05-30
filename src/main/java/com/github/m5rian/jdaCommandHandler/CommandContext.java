@@ -109,16 +109,9 @@ public class CommandContext {
         return this.argumentsRaw;
     }
 
+
     public List<String> getBlacklist() {
-        return this.blacklistService.blacklist;
-    }
-
-    void addUserToBlackList(User user) {
-        this.blacklistService.addUserToBlackList(user);
-    }
-
-    void removeUserFromBlacklist(User user) {
-        this.blacklistService.removeUserFromBlacklist(user);
+        return this.blacklistService.userBlacklist;
     }
 
     /**
