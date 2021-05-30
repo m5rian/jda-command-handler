@@ -279,7 +279,6 @@ public class CommandMessage {
      * This message would get send to the current channel.
      */
     public void send() {
-        System.out.println(this.description);
         check(); // Check for various errors
 
         final EmbedBuilder embed = new EmbedBuilder(); // Create new embed builder
