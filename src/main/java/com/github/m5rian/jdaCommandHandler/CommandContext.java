@@ -1,5 +1,6 @@
 package com.github.m5rian.jdaCommandHandler;
 
+import com.github.m5rian.jdaCommandHandler.commandServices.IBlacklistService;
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -8,6 +9,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * This class contains all information about an executed command.
@@ -22,6 +24,7 @@ public class CommandContext {
 
     private final MethodInfo methodInfo; // The command service
     private final ICommandService commandService; // Used command service
+    private final IBlacklistService blacklistService; // Used blacklist service
 
     private final EventWaiter waiter; // Event waiter
 
@@ -32,15 +35,17 @@ public class CommandContext {
      * @param event     The MessageReceivedEvent.
      * @param arguments message, without the executor.
      */
-    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, MethodInfo methodInfo, ICommandService commandService) {
+    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, MethodInfo methodInfo, ICommandService commandService, IBlacklistService blacklistService) {
         this.prefix = prefix;
         this.event = event;
         if (arguments.equals("")) this.arguments = new String[0]; // If there no arguments, make an empty array
         else this.arguments = arguments.split("\\s+"); // If there are arguments, split them in spaces
         this.argumentsRaw = arguments;
+
         this.methodInfo = methodInfo;
         this.commandService = commandService;
         this.waiter = commandService.getEventWaiter();
+        this.blacklistService = blacklistService;
     }
 
     /**
@@ -102,6 +107,18 @@ public class CommandContext {
      */
     public String getArgumentsRaw() {
         return this.argumentsRaw;
+    }
+
+    public List<String> getBlacklist() {
+        return this.blacklistService.blacklist;
+    }
+
+    void addUserToBlackList(User user) {
+        this.blacklistService.addUserToBlackList(user);
+    }
+
+    void removeUserFromBlacklist(User user) {
+        this.blacklistService.removeUserFromBlacklist(user);
     }
 
     /**

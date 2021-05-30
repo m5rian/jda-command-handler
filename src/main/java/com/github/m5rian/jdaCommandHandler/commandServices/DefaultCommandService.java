@@ -9,16 +9,18 @@ import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
  * A command service for default needs.
  */
-public class DefaultCommandService implements ICommandService, IPermissionService {
+public class DefaultCommandService implements ICommandService, IPermissionService, IBlacklistService {
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
@@ -33,6 +35,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      * @param allowMention  Should the bot respond on mentions too?
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
+                                 List<String> blacklist, Consumer<User> blacklistAddAction, Consumer<User> blacklistRemoveAction,
                                  CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
@@ -40,6 +43,10 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.defaultPrefix = defaultPrefix;
         this.customPrefix = customPrefix;
         this.allowMention = allowMention;
+        // Blacklist
+        this.blacklist.addAll(blacklist); // Add already blacklisted users
+        this.blacklistHandler.blacklistAddAction = blacklistAddAction; // Assign add action
+        this.blacklistHandler.blacklistRemoveAction = blacklistRemoveAction; // Assign remove action
         // Set command factories
         this.commandMessageFactories.setInfoFactory(infoFactory);
         this.commandMessageFactories.setWarningFactory(warningFactory);
@@ -51,6 +58,8 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
 
     @Override
     public void processCommandExecution(MessageReceivedEvent event) {
+        if (this.blacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
+
         final String rawMsg = event.getMessage().getContentRaw().replace("<@!", "<@"); // Get raw content
 
         String prefix = defaultPrefix; // Get default prefix
@@ -81,7 +90,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
 
-                            command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, command, this)); // Run command
+                            command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, command, this, this)); // Run command
                             break; // Only run command once
                         }
                     }

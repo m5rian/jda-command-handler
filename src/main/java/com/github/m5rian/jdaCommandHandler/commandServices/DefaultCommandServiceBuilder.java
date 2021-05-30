@@ -3,7 +3,10 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -15,6 +18,9 @@ public class DefaultCommandServiceBuilder {
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
     private CommandMessageFactory infoFactory;
+    private List<String> blacklist;
+    private Consumer<User> blacklistAddAction;
+    private Consumer<User> blacklistRemoveAction;
     private CommandMessageFactory warningFactory;
     private CommandMessageFactory errorFactory;
     private CommandUsageFactory usageFactory;
@@ -58,6 +64,22 @@ public class DefaultCommandServiceBuilder {
         return this;
     }
 
+    public DefaultCommandServiceBuilder setBlacklist(List<String> blacklist) {
+        this.blacklist = blacklist;
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder onBlacklistAddEvent(Consumer<User> blacklistAddAction) {
+        this.blacklistAddAction = blacklistAddAction;
+        return this;
+    }
+
+
+    public DefaultCommandServiceBuilder onBlacklistRemoveEvent(Consumer<User> blacklistRemoveAction) {
+        this.blacklistRemoveAction = blacklistRemoveAction;
+        return this;
+    }
+
     public DefaultCommandServiceBuilder setInfoFactory(CommandMessageFactory infoFactory) {
         this.infoFactory = infoFactory;
         return this;
@@ -89,6 +111,9 @@ public class DefaultCommandServiceBuilder {
                 this.defaultPrefix,
                 this.customPrefix,
                 this.allowMention,
+                this.blacklist,
+                this.blacklistAddAction,
+                this.blacklistRemoveAction,
 
                 this.infoFactory,
                 this.warningFactory,
