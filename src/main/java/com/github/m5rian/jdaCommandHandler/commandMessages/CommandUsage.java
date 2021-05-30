@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.function.Function;
 
 /**
@@ -27,6 +28,7 @@ public class CommandUsage {
     private final CommandContext ctx;
     private final boolean reply; // Should the message be a reply?
     private Class[] classes; // Classes to get the usage from
+    private String[] methodNames; // Name of methods to add as usage
 
     public CommandUsage(String message, Function<CommandEvent, String> text, EmbedBuilder embed, Function<CommandEvent, String> description, Function<CommandEvent, MessageEmbed.Field> field,
                         CommandContext ctx, boolean reply) {
@@ -42,8 +44,13 @@ public class CommandUsage {
         this.reply = reply;
     }
 
-    public CommandUsage setCommands(Class... classes) {
+    public CommandUsage addUsages(Class... classes) {
         this.classes = classes;
+        return this;
+    }
+
+    public CommandUsage allowCommands(String... methodNames) {
+        this.methodNames = methodNames;
         return this;
     }
 
@@ -51,6 +58,9 @@ public class CommandUsage {
         // Add command usages
         for (Class clazz : classes) { // Go through all classes
             for (Method method : clazz.getMethods()) { // Go through all methods of the class
+                // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
+                if (methodNames.length != 0 && !Arrays.asList(methodNames).contains(method.getName())) continue;
+
                 // Command annotation is present
                 if (method.isAnnotationPresent(CommandEvent.class)) {
                     final CommandEvent commandInfo = method.getAnnotation(CommandEvent.class); // Get info about command
