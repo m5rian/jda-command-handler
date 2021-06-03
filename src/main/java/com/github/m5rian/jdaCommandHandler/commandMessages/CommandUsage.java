@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * @author Marian
@@ -21,16 +21,16 @@ public class CommandUsage {
     private String message;
     private final EmbedBuilder embed;
     // Command usages
-    private Function<CommandEvent, String> text;
-    private Function<CommandEvent, String> description;
-    private Function<CommandEvent, MessageEmbed.Field> field;
+    private BiFunction<CommandContext, CommandEvent, String> text;
+    private BiFunction<CommandContext, CommandEvent, String> description;
+    private BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field;
     // Other
     private final CommandContext ctx;
     private final boolean reply; // Should the message be a reply?
     private Class[] classes; // Classes to get the usage from
     private String[] methodNames; // Name of methods to add as usage
 
-    public CommandUsage(String message, Function<CommandEvent, String> text, EmbedBuilder embed, Function<CommandEvent, String> description, Function<CommandEvent, MessageEmbed.Field> field,
+    public CommandUsage(String message, BiFunction<CommandContext, CommandEvent, String> text, EmbedBuilder embed, BiFunction<CommandContext, CommandEvent, String> description, BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field,
                         CommandContext ctx, boolean reply) {
         // Base message
         this.message = message;
@@ -67,18 +67,18 @@ public class CommandUsage {
 
                     // Normal text is used to display commands
                     if (this.text != null) {
-                        final String usage = this.text.apply(commandInfo); // Get usage for command
+                        final String usage = this.text.apply(this.ctx, commandInfo); // Get usage for command
                         message += "\n" + usage; // Append command usage in message
                     }
 
                     // Use description to display commands
                     if (this.description != null) {
-                        final String usage = this.description.apply(commandInfo); // Get usage for command
+                        final String usage = this.description.apply(this.ctx, commandInfo); // Get usage for command
                         embed.appendDescription("\n" + usage); // Append command usage to description
                     }
                     // Use fields to display commands
                     else if (this.field != null) {
-                        final MessageEmbed.Field usage = this.field.apply(commandInfo); // Get usage for command
+                        final MessageEmbed.Field usage = this.field.apply(this.ctx, commandInfo); // Get usage for command
                         embed.addField(usage); // Add command usage as field
                     }
                 }

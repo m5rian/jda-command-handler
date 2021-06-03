@@ -5,6 +5,7 @@ import com.github.m5rian.jdaCommandHandler.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class CommandUsageFactory {
@@ -12,9 +13,9 @@ public class CommandUsageFactory {
     private Function<CommandContext, String> message = null;
     private Function<CommandContext, EmbedBuilder> embed = null;
     // Command usages
-    private Function<CommandEvent, String> text = null;
-    private Function<CommandEvent, String> description = null;
-    private Function<CommandEvent, MessageEmbed.Field> field = null;
+    private BiFunction<CommandContext, CommandEvent, String> text = null;
+    private BiFunction<CommandContext, CommandEvent, String> description = null;
+    private BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field = null;
     // Other
     private boolean reply = false;
 
@@ -28,17 +29,17 @@ public class CommandUsageFactory {
         return this;
     }
 
-    public CommandUsageFactory addUsageAsText(Function<CommandEvent, String> text) {
+    public CommandUsageFactory addUsageAsText(BiFunction<CommandContext, CommandEvent, String> text) {
         this.text = text;
         return this;
     }
 
-    public CommandUsageFactory addUsageAsDescription(Function<CommandEvent, String> description) {
+    public CommandUsageFactory addUsageAsDescription(BiFunction<CommandContext, CommandEvent, String> description) {
         this.description = description;
         return this;
     }
 
-    public CommandUsageFactory addUsageAsField(Function<CommandEvent, MessageEmbed.Field> field) {
+    public CommandUsageFactory addUsageAsField(BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field) {
         this.field = field;
         return this;
     }
