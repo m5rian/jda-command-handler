@@ -35,6 +35,7 @@ public class EventWaiter implements EventListener {
     public void onEvent(@NotNull GenericEvent action) {
         final List<Settings> waitersCopy = new ArrayList<>(this.waiters); // Copy of current waiters to not interrupt the original ones
         final List<Settings> triggered = new ArrayList<>(); // Waiters which got triggered and need to be removed
+
         for (Settings waiter : waitersCopy) {
             if (waiter.type == action.getClass()) { // Waiting event is same as triggered event
                 // Condition is met or no condition set
@@ -46,6 +47,8 @@ public class EventWaiter implements EventListener {
                 }
             }
         }
+
+        this.waiters.removeAll(triggered);
     }
 
     /**
