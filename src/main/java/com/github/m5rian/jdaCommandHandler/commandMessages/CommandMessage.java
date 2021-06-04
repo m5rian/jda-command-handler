@@ -281,6 +281,22 @@ public class CommandMessage {
     public void send() {
         check(); // Check for various errors
 
+        final EmbedBuilder embed = getEmbed(); // Get embed
+
+        final MessageChannel channel = this.ctx.getChannel();
+        if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
+        if (this.message != null && !embed.isEmpty()) channel.sendMessage(this.message).embed(embed.build()).queue();
+        if (this.message == null && !embed.isEmpty()) channel.sendMessage(embed.build()).queue();
+    }
+
+    /**
+     * Build the embed.
+     *
+     * @return Returns a customized {@link EmbedBuilder}.
+     */
+    public EmbedBuilder getEmbed() {
+        check(); // Check for various errors
+
         final EmbedBuilder embed = new EmbedBuilder(); // Create new embed builder
 
         if (this.title != null && this.hyperLink == null) embed.setTitle(this.title);
@@ -291,10 +307,7 @@ public class CommandMessage {
         if (this.description != null) embed.setDescription(this.description);
         if (this.footer != null) embed.setFooter(this.footer);
 
-        final MessageChannel channel = this.ctx.getChannel();
-        if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
-        if (this.message != null && !embed.isEmpty()) channel.sendMessage(this.message).embed(embed.build()).queue();
-        if (this.message == null && !embed.isEmpty()) channel.sendMessage(embed.build()).queue();
+        return embed;
     }
 
     /**
