@@ -55,31 +55,55 @@ public class CommandUsage {
     }
 
     public void send() {
-        // Add command usages
-        for (Class clazz : classes) { // Go through all classes
-            for (Method method : clazz.getMethods()) { // Go through all methods of the class
-                // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
-                if (methodNames.length != 0 && !Arrays.asList(methodNames).contains(method.getName())) continue;
+        // No command was provided
+        if (this.classes == null) {
+            final CommandEvent commandInfo = ctx.getMethodInfo().getCommand(); // Get info about command
 
-                // Command annotation is present
-                if (method.isAnnotationPresent(CommandEvent.class)) {
-                    final CommandEvent commandInfo = method.getAnnotation(CommandEvent.class); // Get info about command
+            // Normal text is used to display commands
+            if (this.text != null) {
+                final String usage = this.text.apply(this.ctx, commandInfo); // Get usage for command
+                message += "\n" + usage; // Append command usage in message
+            }
 
-                    // Normal text is used to display commands
-                    if (this.text != null) {
-                        final String usage = this.text.apply(this.ctx, commandInfo); // Get usage for command
-                        message += "\n" + usage; // Append command usage in message
-                    }
+            // Use description to display commands
+            if (this.description != null) {
+                final String usage = this.description.apply(this.ctx, commandInfo); // Get usage for command
+                embed.appendDescription("\n" + usage); // Append command usage to description
+            }
+            // Use fields to display commands
+            else if (this.field != null) {
+                final MessageEmbed.Field usage = this.field.apply(this.ctx, commandInfo); // Get usage for command
+                embed.addField(usage); // Add command usage as field
+            }
+        }
+        // Specific commands were provided
+        else {
+            // Add command usages
+            for (Class clazz : classes) { // Go through all classes
+                for (Method method : clazz.getMethods()) { // Go through all methods of the class
+                    // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
+                    if (methodNames.length != 0 && !Arrays.asList(methodNames).contains(method.getName())) continue;
 
-                    // Use description to display commands
-                    if (this.description != null) {
-                        final String usage = this.description.apply(this.ctx, commandInfo); // Get usage for command
-                        embed.appendDescription("\n" + usage); // Append command usage to description
-                    }
-                    // Use fields to display commands
-                    else if (this.field != null) {
-                        final MessageEmbed.Field usage = this.field.apply(this.ctx, commandInfo); // Get usage for command
-                        embed.addField(usage); // Add command usage as field
+                    // Command annotation is present
+                    if (method.isAnnotationPresent(CommandEvent.class)) {
+                        final CommandEvent commandInfo = method.getAnnotation(CommandEvent.class); // Get info about command
+
+                        // Normal text is used to display commands
+                        if (this.text != null) {
+                            final String usage = this.text.apply(this.ctx, commandInfo); // Get usage for command
+                            message += "\n" + usage; // Append command usage in message
+                        }
+
+                        // Use description to display commands
+                        if (this.description != null) {
+                            final String usage = this.description.apply(this.ctx, commandInfo); // Get usage for command
+                            embed.appendDescription("\n" + usage); // Append command usage to description
+                        }
+                        // Use fields to display commands
+                        else if (this.field != null) {
+                            final MessageEmbed.Field usage = this.field.apply(this.ctx, commandInfo); // Get usage for command
+                            embed.addField(usage); // Add command usage as field
+                        }
                     }
                 }
             }
