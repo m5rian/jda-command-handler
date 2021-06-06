@@ -57,7 +57,7 @@ public class CommandUsage {
     public void send() {
         // No command was provided
         if (this.classes == null) {
-            final CommandEvent commandInfo = ctx.getMethodInfo().getCommand(); // Get info about command
+            final CommandEvent commandInfo = ctx.getCommand(); // Get info about command
 
             // Normal text is used to display commands
             if (this.text != null) {

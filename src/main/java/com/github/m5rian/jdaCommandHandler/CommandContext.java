@@ -115,10 +115,10 @@ public class CommandContext {
     }
 
     /**
-     * @return Returns the {@link MethodInfo} of the invoked method.
+     * @return Returns the {@link CommandEvent} of the invoked method.
      */
-    public MethodInfo getMethodInfo() {
-        return this.methodInfo;
+    public CommandEvent getCommand() {
+        return this.methodInfo.getCommand();
     }
 
     /**
