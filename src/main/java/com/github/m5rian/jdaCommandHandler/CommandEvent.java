@@ -48,7 +48,7 @@ public @interface CommandEvent {
      *
      * @return Returns required arguments for the command.
      */
-    String args() default "";
+    String[] args() default {};
 
     /**
      * This is not used for any technical backend operations.
