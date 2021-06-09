@@ -1,9 +1,6 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
-import com.github.m5rian.jdaCommandHandler.Channel;
-import com.github.m5rian.jdaCommandHandler.CommandContext;
-import com.github.m5rian.jdaCommandHandler.CommandUtils;
-import com.github.m5rian.jdaCommandHandler.Everyone;
+import com.github.m5rian.jdaCommandHandler.*;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
@@ -35,7 +32,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      * @param allowMention  Should the bot respond on mentions too?
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
-                                 List<String> userBlacklist,
+                                 List<CommandHandler> commands, List<String> userBlacklist,
                                  CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
@@ -45,6 +42,8 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.allowMention = allowMention;
         // Blacklist
         this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
+        // Register all commands
+        this.registerCommandClasses(commands.toArray(new CommandHandler[0]));
         // Set command factories
         this.commandMessageFactories.setInfoFactory(infoFactory);
         this.commandMessageFactories.setWarningFactory(warningFactory);

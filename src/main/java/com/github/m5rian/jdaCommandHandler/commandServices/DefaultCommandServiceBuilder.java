@@ -1,9 +1,12 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
+import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -17,6 +20,7 @@ public class DefaultCommandServiceBuilder {
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
     private CommandMessageFactory infoFactory;
+    private final List<CommandHandler> commands = new ArrayList<>();
     private List<String> userBlacklist;
     private CommandMessageFactory warningFactory;
     private CommandMessageFactory errorFactory;
@@ -61,6 +65,16 @@ public class DefaultCommandServiceBuilder {
         return this;
     }
 
+    public DefaultCommandServiceBuilder registerCommandClass(CommandHandler clazz) {
+        this.commands.add(clazz);
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder registerCommandClasses(CommandHandler... classes) {
+        this.commands.addAll(Arrays.asList(classes));
+        return this;
+    }
+
     public DefaultCommandServiceBuilder setUserBlacklist(Supplier<List<String>> userBlacklist) {
         this.userBlacklist = userBlacklist.get();
         return this;
@@ -97,6 +111,7 @@ public class DefaultCommandServiceBuilder {
                 this.defaultPrefix,
                 this.customPrefix,
                 this.allowMention,
+                this.commands,
                 this.userBlacklist,
 
                 this.infoFactory,
