@@ -22,11 +22,7 @@ public interface ICommandService {
     /**
      * Stores all registered commands.
      */
-    Map<MethodInfo, CommandEvent> commands = new HashMap<>();
-    /**
-     * new one
-     */
-    List<MethodInfo> commandsNew = new ArrayList<>();
+    List<MethodInfo> commands = new ArrayList<>();
 
     CommandMessageFactories commandMessageFactories = new CommandMessageFactories();
 
@@ -55,7 +51,7 @@ public interface ICommandService {
             if (method.isAnnotationPresent(CommandEvent.class)) {
                 final CommandEvent annotation = method.getAnnotation(CommandEvent.class); // Get command annotation
                 final MethodInfo methodInfo = new MethodInfo(object, method, annotation); // Create method info object
-                commandsNew.add(methodInfo); // Put command in list
+                commands.add(methodInfo); // Put command in list
             }
         }
     }
@@ -81,10 +77,10 @@ public interface ICommandService {
      */
     default void unregisterCommandClass(CommandHandler object) {
         // For every item
-        this.commands.forEach((key, value) -> {
+        this.commands.forEach(methodInfo -> {
             // Instance is equal to given object
-            if (key.getInstance() == object) {
-                this.commands.remove(key); // Remove method
+            if (methodInfo.getInstance() == object) {
+                this.commands.remove(methodInfo); // Remove method
             }
         });
     }
@@ -99,7 +95,7 @@ public interface ICommandService {
     /**
      * @return Returns a Map with all registered commands.
      */
-    default Map<MethodInfo, CommandEvent> getCommands() {
+    default List<MethodInfo> getCommands() {
         return this.commands;
     }
 

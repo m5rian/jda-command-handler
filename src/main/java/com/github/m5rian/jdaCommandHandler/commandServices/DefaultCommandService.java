@@ -71,7 +71,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         else return; // No command was fired
 
         String finalPrefix = prefix;
-        this.commandsNew.parallelStream().forEach(command -> {
+        this.commands.parallelStream().forEach(command -> {
             try {
 
                 boolean hasPermissions = hasPermissions(event.getMember(), command.getCommand().requires());// Does the member have the required permission?
