@@ -4,6 +4,8 @@ import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
@@ -13,6 +15,7 @@ import javax.annotation.Nonnull;
  * This class is responsable for running {@link ICommandService#processCommandExecution(MessageReceivedEvent)}.
  */
 public class CommandListener extends ListenerAdapter {
+    private final Logger LOGGER = LoggerFactory.getLogger(ICommandService.class);
     private final ICommandService commandService; // A command service
 
     /**
@@ -31,7 +34,7 @@ public class CommandListener extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         try {
             commandService.processCommandExecution(event);
-        } catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
     }
@@ -43,7 +46,8 @@ public class CommandListener extends ListenerAdapter {
      */
     public void onReady(ReadyEvent event) {
         event.getJDA().addEventListener(
-                this.commandService.getEventWaiter() // Register event waiter
-        );
+                this.commandService.getEventWaiter()); // Register event waiter
+
+        LOGGER.info("Bot started and loaded " + this.commandService.getCommands().size() + " commands");
     }
 }
