@@ -306,6 +306,7 @@ public class CommandMessage {
         if (this.author != null) embed.setAuthor(this.author, this.hyperLink, this.authorAvatar);
         if (this.description != null) embed.setDescription(this.description);
         if (this.footer != null) embed.setFooter(this.footer);
+        if (this.image != null) embed.setImage(this.image);
 
         return embed;
     }
