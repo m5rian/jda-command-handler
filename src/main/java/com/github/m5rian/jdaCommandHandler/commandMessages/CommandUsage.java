@@ -54,7 +54,7 @@ public class CommandUsage {
         return this;
     }
 
-    public void send() {
+    private void buildEmbed() {
         // No command was provided
         if (this.classes == null) {
             final CommandEvent commandInfo = ctx.getCommand(); // Get info about command
@@ -82,7 +82,7 @@ public class CommandUsage {
             for (Class clazz : classes) { // Go through all classes
                 for (Method method : clazz.getMethods()) { // Go through all methods of the class
                     // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
-                    if (methodNames.length != 0 && !Arrays.asList(methodNames).contains(method.getName())) continue;
+                    if (this.methodNames.length != 0 && !Arrays.asList(this.methodNames).contains(method.getName())) continue;
 
                     // Command annotation is present
                     if (method.isAnnotationPresent(CommandEvent.class)) {
@@ -91,24 +91,26 @@ public class CommandUsage {
                         // Normal text is used to display commands
                         if (this.text != null) {
                             final String usage = this.text.apply(this.ctx, commandInfo); // Get usage for command
-                            message += "\n" + usage; // Append command usage in message
+                            this.message += "\n" + usage; // Append command usage in message
                         }
 
                         // Use description to display commands
                         if (this.description != null) {
                             final String usage = this.description.apply(this.ctx, commandInfo); // Get usage for command
-                            embed.appendDescription("\n" + usage); // Append command usage to description
+                            this.embed.appendDescription("\n" + usage); // Append command usage to description
                         }
                         // Use fields to display commands
                         else if (this.field != null) {
                             final MessageEmbed.Field usage = this.field.apply(this.ctx, commandInfo); // Get usage for command
-                            embed.addField(usage); // Add command usage as field
+                            this.embed.addField(usage); // Add command usage as field
                         }
                     }
                 }
             }
         }
+    }
 
+    public void send() {
         final MessageChannel channel = this.ctx.getChannel(); // Get channel
         final Message msg = ctx.getEvent().getMessage(); // Get message from author
 
@@ -124,6 +126,11 @@ public class CommandUsage {
             if (!this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessage(this.message).embed(this.embed.build()).queue();
             if (this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessage(this.embed.build()).queue();
         }
+    }
+
+    public EmbedBuilder getEmbed() {
+        buildEmbed();
+        return this.embed;
     }
 
 }
