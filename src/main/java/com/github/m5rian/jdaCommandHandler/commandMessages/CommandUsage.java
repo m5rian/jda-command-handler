@@ -101,7 +101,7 @@ public class CommandUsage {
             for (Class clazz : classes) { // Go through all classes
                 for (Method method : clazz.getMethods()) { // Go through all methods of the class
                     // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
-                    if (this.methodNames.length != 0 && !Arrays.asList(this.methodNames).contains(method.getName())) continue;
+                    if (this.methodNames != null && !Arrays.asList(this.methodNames).contains(method.getName())) continue;
 
                     // Command annotation is present
                     if (method.isAnnotationPresent(CommandEvent.class)) {
