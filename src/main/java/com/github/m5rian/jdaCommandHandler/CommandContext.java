@@ -2,6 +2,7 @@ package com.github.m5rian.jdaCommandHandler;
 
 import com.github.m5rian.jdaCommandHandler.commandServices.IBlacklistService;
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -60,6 +61,14 @@ public class CommandContext {
      */
     public MessageReceivedEvent getEvent() {
         return this.event;
+    }
+
+    public JDA getBot() {
+        return this.event.getJDA();
+    }
+
+    public Member getBotMember() {
+        return this.getGuild().getSelfMember();
     }
 
     /**
