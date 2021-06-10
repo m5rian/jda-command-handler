@@ -8,7 +8,9 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 
 /**
@@ -17,16 +19,18 @@ import java.util.function.BiFunction;
  * You can set up a preset with the {@link CommandUsageFactory}.
  */
 public class CommandUsage {
+    private final EmbedBuilder embed;
+    // Other
+    private final CommandContext ctx;
+    private final boolean reply; // Should the message be a reply?
     // Base message
     private String message;
-    private final EmbedBuilder embed;
     // Command usages
     private BiFunction<CommandContext, CommandEvent, String> text;
     private BiFunction<CommandContext, CommandEvent, String> description;
     private BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field;
-    // Other
-    private final CommandContext ctx;
-    private final boolean reply; // Should the message be a reply?
+    private List<MessageEmbed.Field> fields = new ArrayList<>(); // Additional fields
+    private String footer; // Footer of embed
     private Class[] classes; // Classes to get the usage from
     private String[] methodNames; // Name of methods to add as usage
 
@@ -42,6 +46,21 @@ public class CommandUsage {
         // Other
         this.ctx = ctx;
         this.reply = reply;
+    }
+
+    public CommandUsage addInlineField(String name, String value) {
+        this.fields.add(new MessageEmbed.Field(name, value, true));
+        return this;
+    }
+
+    public CommandUsage addField(String name, String value) {
+        this.fields.add(new MessageEmbed.Field(name, value, false));
+        return this;
+    }
+
+    public CommandUsage setFooter(String footer) {
+        this.footer = footer;
+        return this;
     }
 
     public CommandUsage addUsages(Class... classes) {
@@ -108,6 +127,9 @@ public class CommandUsage {
                 }
             }
         }
+
+        if (this.footer != null) this.embed.setFooter(this.footer);
+        if (!this.fields.isEmpty()) this.fields.forEach(this.embed::addField);
     }
 
     public void send() {
