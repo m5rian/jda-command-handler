@@ -32,7 +32,8 @@ public class CommandUsage {
     private List<MessageEmbed.Field> fields = new ArrayList<>(); // Additional fields
     private String footer; // Footer of embed
     private Class[] classes; // Classes to get the usage from
-    private String[] methodNames; // Name of methods to add as usage
+    private String[] allowedMethods; // Names of methods to add as usage
+    private String[] forbiddenMethods; // Names of methods which shouldn't get added
 
     public CommandUsage(String message, BiFunction<CommandContext, CommandEvent, String> text, EmbedBuilder embed, BiFunction<CommandContext, CommandEvent, String> description, BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field,
                         CommandContext ctx, boolean reply) {
@@ -69,7 +70,12 @@ public class CommandUsage {
     }
 
     public CommandUsage allowCommands(String... methodNames) {
-        this.methodNames = methodNames;
+        this.allowedMethods = methodNames;
+        return this;
+    }
+
+    public CommandUsage forbidCommands(String... methodNames) {
+        this.forbiddenMethods = methodNames;
         return this;
     }
 
@@ -101,7 +107,9 @@ public class CommandUsage {
             for (Class clazz : classes) { // Go through all classes
                 for (Method method : clazz.getMethods()) { // Go through all methods of the class
                     // Only allowed commands were specified and the method name is one of the methods which are allowed to be added as a usage
-                    if (this.methodNames != null && !Arrays.asList(this.methodNames).contains(method.getName())) continue;
+                    if (this.allowedMethods != null && !Arrays.asList(this.allowedMethods).contains(method.getName())) continue;
+                    // Some commands are forbidden to add as a usage and current command is one of them
+                    if (this.forbiddenMethods != null && Arrays.asList(this.forbiddenMethods).contains(method.getName())) continue;
 
                     // Command annotation is present
                     if (method.isAnnotationPresent(CommandEvent.class)) {
