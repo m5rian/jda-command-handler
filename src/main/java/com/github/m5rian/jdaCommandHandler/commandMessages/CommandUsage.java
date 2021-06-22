@@ -32,8 +32,8 @@ public class CommandUsage {
     private List<MessageEmbed.Field> fields = new ArrayList<>(); // Additional fields
     private String footer; // Footer of embed
     private Class[] classes; // Classes to get the usage from
-    private String[] allowedMethods; // Names of methods to add as usage
-    private String[] forbiddenMethods; // Names of methods which shouldn't get added
+    private String[] allowedMethods = null; // Names of methods to add as usage
+    private String[] forbiddenMethods = null; // Names of methods which shouldn't get added
 
     public CommandUsage(String message, BiFunction<CommandContext, CommandEvent, String> text, EmbedBuilder embed, BiFunction<CommandContext, CommandEvent, String> description, BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field,
                         CommandContext ctx, boolean reply) {
@@ -143,6 +143,7 @@ public class CommandUsage {
     public void send() {
         final MessageChannel channel = this.ctx.getChannel(); // Get channel
         final Message msg = ctx.getEvent().getMessage(); // Get message from author
+        buildEmbed();
 
         // Reply
         if (this.reply) {
