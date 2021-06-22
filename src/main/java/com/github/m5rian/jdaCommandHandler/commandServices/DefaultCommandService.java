@@ -6,12 +6,11 @@ import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -41,9 +40,19 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.customPrefix = customPrefix;
         this.allowMention = allowMention;
         // Blacklist
-        this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
+        if (!userBlacklist.isEmpty()) this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
         // Register all commands
-        this.registerCommandClasses(commands.toArray(new CommandHandler[0]));
+        commands.forEach(command -> {
+            // Go through each method
+            for (Method method : command.getClass().getMethods()) {
+                // Method is command
+                if (method.isAnnotationPresent(CommandEvent.class)) {
+                    final CommandEvent annotation = method.getAnnotation(CommandEvent.class); // Get command annotation
+                    final MethodInfo methodInfo = new MethodInfo(command, method, annotation); // Create method info object
+                    this.commands.add(methodInfo); // Put command in list
+                }
+            }
+        });
         // Set command factories
         this.commandMessageFactories.setInfoFactory(infoFactory);
         this.commandMessageFactories.setWarningFactory(warningFactory);

@@ -16,12 +16,12 @@ import java.util.function.Supplier;
  * The builder for {@link DefaultCommandService}.
  */
 public class DefaultCommandServiceBuilder {
+    private final List<CommandHandler> commands = new ArrayList<>();
     private String defaultPrefix;
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
     private CommandMessageFactory infoFactory;
-    private final List<CommandHandler> commands = new ArrayList<>();
-    private List<String> userBlacklist;
+    private List<String> userBlacklist = new ArrayList<>();
     private CommandMessageFactory warningFactory;
     private CommandMessageFactory errorFactory;
     private CommandUsageFactory usageFactory;
@@ -76,7 +76,7 @@ public class DefaultCommandServiceBuilder {
     }
 
     public DefaultCommandServiceBuilder setUserBlacklist(Supplier<List<String>> userBlacklist) {
-        this.userBlacklist = userBlacklist.get();
+        this.userBlacklist.addAll(userBlacklist.get());
         return this;
     }
 
