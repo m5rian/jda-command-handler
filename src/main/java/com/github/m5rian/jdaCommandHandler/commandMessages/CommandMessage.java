@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -15,21 +16,22 @@ import java.util.function.Function;
  * to quickly send command specific messages with pre-made values.
  */
 public class CommandMessage {
+    // Other
+    private final CommandContext ctx;
     // Message
     private String message = null;
     // Embed
     private String title = null;
     private String thumbnail = null;
-    private String image = null;
     private Color colour = null;
     private String author = null;
     private String hyperLink = null;
     private String authorAvatar = null;
     private String description = null;
-    private final List<MessageEmbed.Field> fields;
+    private List<MessageEmbed.Field> fields;
+    private String image = null;
     private String footer = null;
-    // Other
-    private final CommandContext ctx;
+    private Instant timestamp;
     private boolean reply;
 
     /**
@@ -143,17 +145,6 @@ public class CommandMessage {
     }
 
     /**
-     * Overrides the current {@link CommandMessage#image}.
-     *
-     * @param image The {@link MessageEmbed.ImageInfo#url}.
-     * @return Returns the current {@link CommandMessage} for method chaining.
-     */
-    public CommandMessage setImage(String image) {
-        this.image = image;
-        return this;
-    }
-
-    /**
      * Overrides the current {@link MessageEmbed#color}.
      *
      * @param colour The {@link MessageEmbed#color}.
@@ -253,6 +244,17 @@ public class CommandMessage {
     }
 
     /**
+     * Overrides the current {@link CommandMessage#image}.
+     *
+     * @param image The {@link MessageEmbed.ImageInfo#url}.
+     * @return Returns the current {@link CommandMessage} for method chaining.
+     */
+    public CommandMessage setImage(String image) {
+        this.image = image;
+        return this;
+    }
+
+    /**
      * Overrides the current {@link CommandMessage#footer}
      *
      * @param footer The {@link MessageEmbed.Footer#text}.
@@ -260,6 +262,11 @@ public class CommandMessage {
      */
     public CommandMessage setFooter(String footer) {
         this.footer = footer;
+        return this;
+    }
+
+    public CommandMessage addTimestamp() {
+        this.timestamp = Instant.now();
         return this;
     }
 
@@ -306,6 +313,10 @@ public class CommandMessage {
         if (this.author != null) embed.setAuthor(this.author, this.hyperLink, this.authorAvatar);
         if (this.description != null) embed.setDescription(this.description);
         if (this.footer != null) embed.setFooter(this.footer);
+        this.fields.forEach(field -> {
+            System.out.println("one field");
+            embed.addField(field);
+        }); // Add all fields
         if (this.image != null) embed.setImage(this.image);
 
         return embed;
