@@ -4,6 +4,7 @@ import com.github.m5rian.jdaCommandHandler.*;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -20,6 +22,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
+    private final BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
      * Constructor
@@ -32,7 +35,8 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
                                  List<CommandHandler> commands, List<String> userBlacklist,
-                                 CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory) {
+                                 CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory,
+                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
 
@@ -58,6 +62,8 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         this.commandMessageFactories.setWarningFactory(warningFactory);
         this.commandMessageFactories.setErrorFactory(errorFactory);
         this.commandMessageFactories.setCommandUsageFactory(usageFactory);
+        // Set error handler
+        this.errorHandler = errorHandler;
 
         this.registerPermission(new Everyone()); // Register default role
     }
@@ -111,7 +117,11 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
             }
             // Error is thrown in the original method
             catch (InvocationTargetException e) {
-                e.getCause().printStackTrace();
+                if (this.errorHandler != null) {
+                    this.errorHandler.accept(event, e.getCause()); // Handle errors
+                } else {
+                    e.getCause().printStackTrace();
+                }
             }
         });
 

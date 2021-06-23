@@ -3,11 +3,15 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -25,6 +29,7 @@ public class DefaultCommandServiceBuilder {
     private CommandMessageFactory warningFactory;
     private CommandMessageFactory errorFactory;
     private CommandUsageFactory usageFactory;
+    private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
      * Set the default prefix.
@@ -47,7 +52,7 @@ public class DefaultCommandServiceBuilder {
      * The {@link DefaultCommandServiceBuilder#defaultPrefix} will be replaced with the default prefix.
      *
      * @param prefix A Function, which returns a guild specific prefix.
-     * @return Returns {@link DefaultCommandServiceBuilder}.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
      */
     public DefaultCommandServiceBuilder setVariablePrefix(Function<Guild, String> prefix) {
         this.customPrefix = prefix;
@@ -58,7 +63,7 @@ public class DefaultCommandServiceBuilder {
      * This method allows the bot to respond not only on commands,
      * the bot will then also respond at his mention.
      *
-     * @return Returns {@link DefaultCommandServiceBuilder}.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
      */
     public DefaultCommandServiceBuilder allowMention() {
         this.allowMention = true;
@@ -101,6 +106,15 @@ public class DefaultCommandServiceBuilder {
     }
 
     /**
+     * @param error {@link Consumer} which contains the {@link Exception} as a parameter.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder handleErrors(BiConsumer<MessageReceivedEvent, Throwable> error) {
+        this.errorHandler = error;
+        return this;
+    }
+
+    /**
      * Build the command service.
      *
      * @return Returns a finished {@link DefaultCommandService}.
@@ -117,7 +131,8 @@ public class DefaultCommandServiceBuilder {
                 this.infoFactory,
                 this.warningFactory,
                 this.errorFactory,
-                this.usageFactory
+                this.usageFactory,
+                this.errorHandler
         );
     }
 }
