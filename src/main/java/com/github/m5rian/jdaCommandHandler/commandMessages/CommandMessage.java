@@ -313,10 +313,7 @@ public class CommandMessage {
         if (this.author != null) embed.setAuthor(this.author, this.hyperLink, this.authorAvatar);
         if (this.description != null) embed.setDescription(this.description);
         if (this.footer != null) embed.setFooter(this.footer);
-        this.fields.forEach(field -> {
-            System.out.println("one field");
-            embed.addField(field);
-        }); // Add all fields
+        this.fields.forEach(embed::addField); // Add all fields
         if (this.image != null) embed.setImage(this.image);
 
         return embed;
