@@ -4,7 +4,6 @@ import com.github.m5rian.jdaCommandHandler.*;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -86,8 +85,11 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         else return; // No command was fired
 
         String finalPrefix = prefix;
-        this.commands.parallelStream().forEach(command -> {
+
+        int i = 0;
+        while (i < this.commands.size())
             try {
+                final MethodInfo command = this.commands.get(i);
 
                 boolean hasPermissions = hasPermissions(event.getMember(), command.getCommand().requires());// Does the member have the required permission?
                 boolean rightChannel = isType(command.getCommand().channel(), event); // Was the command executed in the right channel?
@@ -107,7 +109,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
                         }
                     }
                 }
-
+                i++;
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -123,8 +125,6 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
                     e.getCause().printStackTrace();
                 }
             }
-        });
-
     }
 
     /**
