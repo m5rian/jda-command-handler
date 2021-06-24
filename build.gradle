@@ -5,10 +5,10 @@ plugins {
 
 group = 'com.github.m5rian'
 archivesBaseName = 'JdaCommandHandler'
-version = '0.3.5'
+version = '0.3.6'
 
-sourceCompatibility = 1.15
-targetCompatibility = 1.15
+sourceCompatibility = 1.16
+targetCompatibility = 1.16
 
 repositories {
     mavenCentral()
