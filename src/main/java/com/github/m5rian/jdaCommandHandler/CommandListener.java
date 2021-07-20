@@ -1,7 +1,9 @@
 package com.github.m5rian.jdaCommandHandler;
 
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
+import com.github.m5rian.jdaCommandHandler.commandServices.ISlashCommandService;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -17,12 +19,45 @@ import javax.annotation.Nonnull;
 public class CommandListener extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger(ICommandService.class);
     private final ICommandService commandService; // A command service
+    private final ISlashCommandService slashCommandService; // A command service for slash commands
 
     /**
      * @param commandService A command service.
      */
-    public CommandListener(ICommandService commandService) {
-        this.commandService = commandService;
+    public CommandListener(Object commandService) {
+        this.commandService = (ICommandService) commandService;
+        this.slashCommandService = (ISlashCommandService) commandService;
+    }
+
+
+    /**
+     * Fires once the bot is fully loaded up.
+     *
+     * @param event A {@link ReadyEvent}.
+     */
+    @Override
+    public void onReady(ReadyEvent event) {
+        this.slashCommandService.pushChanges(event.getJDA()); // Push slash command changes to Discord|
+        event.getJDA().addEventListener(this.commandService.getEventWaiter()); // Register event waiter
+
+        LOGGER.info("Bot started successfully");
+        LOGGER.info("Loaded " + this.commandService.getCommands().size() + " commands");
+        event.getJDA().retrieveCommands().queue(slashCommands -> LOGGER.info("Loaded " + slashCommands.size() + " slash commands"));
+    }
+
+    /**
+     * Runs once a SlashCommandEvent is fired.
+     * On that event the {@link ISlashCommandService#processSlashCommandExecution(SlashCommandEvent)} will fire too.
+     *
+     * @param event The SlashCommandEvent.
+     */
+    @Override
+    public void onSlashCommand(@Nonnull SlashCommandEvent event) {
+        try {
+            this.slashCommandService.processSlashCommandExecution(event);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
     }
 
     /**
@@ -31,23 +66,12 @@ public class CommandListener extends ListenerAdapter {
      *
      * @param event The MessageReceivedEvent.
      */
+    @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         try {
-            commandService.processCommandExecution(event);
+            this.commandService.processCommandExecution(event);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-    }
-
-    /**
-     * Fires once the bot is fully loaded up.
-     *
-     * @param event A {@link ReadyEvent}.
-     */
-    public void onReady(ReadyEvent event) {
-        event.getJDA().addEventListener(
-                this.commandService.getEventWaiter()); // Register event waiter
-
-        LOGGER.info("Bot started and loaded " + this.commandService.getCommands().size() + " commands");
     }
 }

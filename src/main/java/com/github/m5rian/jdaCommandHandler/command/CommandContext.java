@@ -1,5 +1,6 @@
-package com.github.m5rian.jdaCommandHandler;
+package com.github.m5rian.jdaCommandHandler.command;
 
+import com.github.m5rian.jdaCommandHandler.EventWaiter;
 import com.github.m5rian.jdaCommandHandler.commandServices.IBlacklistService;
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import net.dv8tion.jda.api.JDA;
@@ -23,7 +24,7 @@ public class CommandContext {
     private final String[] arguments; // Arguments, split in spaces
     private final String argumentsRaw; // Non-split arguments
 
-    private final MethodInfo methodInfo; // The command service
+    private final CommandData methodInfo; // The command service
     private final ICommandService commandService; // Used command service
     private final IBlacklistService blacklistService; // Used blacklist service
 
@@ -36,7 +37,7 @@ public class CommandContext {
      * @param event     The MessageReceivedEvent.
      * @param arguments message, without the executor.
      */
-    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, MethodInfo methodInfo, ICommandService commandService, IBlacklistService blacklistService) {
+    public CommandContext(String prefix, MessageReceivedEvent event, String arguments, CommandData methodInfo, ICommandService commandService, IBlacklistService blacklistService) {
         this.prefix = prefix;
         this.event = event;
         if (arguments.equals("")) this.arguments = new String[0]; // If there no arguments, make an empty array

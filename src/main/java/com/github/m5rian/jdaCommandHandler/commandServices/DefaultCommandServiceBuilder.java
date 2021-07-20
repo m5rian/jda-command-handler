@@ -21,6 +21,8 @@ import java.util.function.Supplier;
  */
 public class DefaultCommandServiceBuilder {
     private final List<CommandHandler> commands = new ArrayList<>();
+    private final List<CommandHandler> slashCommands = new ArrayList<>();
+
     private String defaultPrefix;
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
@@ -80,6 +82,16 @@ public class DefaultCommandServiceBuilder {
         return this;
     }
 
+    public DefaultCommandServiceBuilder registerSlashCommandClass(CommandHandler clazz) {
+        this.slashCommands.add(clazz);
+        return this;
+    }
+
+    public DefaultCommandServiceBuilder registerSlashCommandClasses(CommandHandler... classes) {
+        this.slashCommands.addAll(Arrays.asList(classes));
+        return this;
+    }
+
     public DefaultCommandServiceBuilder setUserBlacklist(Supplier<List<String>> userBlacklist) {
         this.userBlacklist.addAll(userBlacklist.get());
         return this;
@@ -125,7 +137,10 @@ public class DefaultCommandServiceBuilder {
                 this.defaultPrefix,
                 this.customPrefix,
                 this.allowMention,
+
                 this.commands,
+                this.slashCommands,
+
                 this.userBlacklist,
 
                 this.infoFactory,

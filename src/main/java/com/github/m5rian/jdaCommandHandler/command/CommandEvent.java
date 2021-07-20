@@ -1,4 +1,8 @@
-package com.github.m5rian.jdaCommandHandler;
+package com.github.m5rian.jdaCommandHandler.command;
+
+import com.github.m5rian.jdaCommandHandler.Channel;
+import com.github.m5rian.jdaCommandHandler.Everyone;
+import com.github.m5rian.jdaCommandHandler.Permission;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -5,7 +5,7 @@ plugins {
 
 group = 'com.github.m5rian'
 archivesBaseName = 'JdaCommandHandler'
-version = '0.3.6'
+version = 'slash-commands_15'
 
 sourceCompatibility = 1.16
 targetCompatibility = 1.16
@@ -28,7 +28,8 @@ repositories {
 }
 
 dependencies {
-    api group: 'net.dv8tion', name: 'JDA', version: '4.2.1_259' // JDA
+    api group: 'net.dv8tion', name: 'JDA', version: '4.3.0_296' // JDA
+    implementation group: 'org.json', name: 'json', version: '20210307' // JSON
     api group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3' // Logback classic
 }
 

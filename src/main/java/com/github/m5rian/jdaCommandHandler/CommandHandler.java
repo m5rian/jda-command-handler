@@ -1,5 +1,6 @@
 package com.github.m5rian.jdaCommandHandler;
 
+import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessage;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsage;
 

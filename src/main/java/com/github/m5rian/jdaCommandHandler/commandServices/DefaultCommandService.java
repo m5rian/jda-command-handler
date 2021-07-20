@@ -1,15 +1,24 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
-import com.github.m5rian.jdaCommandHandler.*;
+import com.github.m5rian.jdaCommandHandler.Channel;
+import com.github.m5rian.jdaCommandHandler.CommandHandler;
+import com.github.m5rian.jdaCommandHandler.CommandUtils;
+import com.github.m5rian.jdaCommandHandler.Everyone;
+import com.github.m5rian.jdaCommandHandler.command.CommandContext;
+import com.github.m5rian.jdaCommandHandler.command.CommandData;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
+import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandContext;
+import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -17,7 +26,7 @@ import java.util.function.Function;
 /**
  * A command service for default needs.
  */
-public class DefaultCommandService implements ICommandService, IPermissionService, IBlacklistService {
+public class DefaultCommandService implements ICommandService, ISlashCommandService, IPermissionService, IBlacklistService {
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
@@ -33,7 +42,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
      * @param allowMention  Should the bot respond on mentions too?
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
-                                 List<CommandHandler> commands, List<String> userBlacklist,
+                                 List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
                                  CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory,
                                  BiConsumer<MessageReceivedEvent, Throwable> errorHandler) {
         // No default prefix set
@@ -45,17 +54,9 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         // Blacklist
         if (!userBlacklist.isEmpty()) this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
         // Register all commands
-        commands.forEach(command -> {
-            // Go through each method
-            for (Method method : command.getClass().getMethods()) {
-                // Method is command
-                if (method.isAnnotationPresent(CommandEvent.class)) {
-                    final CommandEvent annotation = method.getAnnotation(CommandEvent.class); // Get command annotation
-                    final MethodInfo methodInfo = new MethodInfo(command, method, annotation); // Create method info object
-                    this.commands.add(methodInfo); // Put command in list
-                }
-            }
-        });
+        commands.forEach(this::registerCommandClass);
+        // Register slashCommands
+        slashCommands.forEach(this::registerSlashCommandClass);
         // Set command factories
         this.commandMessageFactories.setInfoFactory(infoFactory);
         this.commandMessageFactories.setWarningFactory(warningFactory);
@@ -68,8 +69,34 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
     }
 
     @Override
+    public void processSlashCommandExecution(SlashCommandEvent event) {
+        if (this.userBlacklist.contains(event.getUser().getId())) return; // User is on blacklist
+
+        int i = 0;
+        while (i < this.slashCommands.size())
+            try {
+                final SlashCommandData slashCommand = this.slashCommands.get(i);
+
+                if (slashCommand.getSlashCommand().name().equals(event.getName())) {
+                    slashCommand.getMethod().invoke(slashCommand.getInstance(), new SlashCommandContext(event, slashCommand, this)); // Run slash command
+                    break; // Only run slash command once
+                }
+                i++;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            // Error is thrown in the original method
+            catch (InvocationTargetException e) {
+
+                e.getCause().printStackTrace();
+            }
+    }
+
+    @Override
     public void processCommandExecution(MessageReceivedEvent event) {
         if (this.userBlacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
+        if (event.isFromGuild() && !event.getGuild().getSelfMember().hasPermission((GuildChannel) event.getChannel(), Permission.MESSAGE_WRITE))
+            return;
 
         final String rawMsg = event.getMessage().getContentRaw().replace("<@!", "<@"); // Get raw content
 
@@ -89,7 +116,7 @@ public class DefaultCommandService implements ICommandService, IPermissionServic
         int i = 0;
         while (i < this.commands.size())
             try {
-                final MethodInfo command = this.commands.get(i);
+                final CommandData command = this.commands.get(i);
 
                 boolean hasPermissions = hasPermissions(event.getMember(), command.getCommand().requires());// Does the member have the required permission?
                 boolean rightChannel = isType(command.getCommand().channel(), event); // Was the command executed in the right channel?

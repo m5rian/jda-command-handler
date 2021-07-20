@@ -1,6 +1,9 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
 import com.github.m5rian.jdaCommandHandler.*;
+import com.github.m5rian.jdaCommandHandler.command.CommandContext;
+import com.github.m5rian.jdaCommandHandler.command.CommandData;
+import com.github.m5rian.jdaCommandHandler.command.CommandEvent;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessage;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactories;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsage;
@@ -8,9 +11,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Marian
@@ -22,7 +23,7 @@ public interface ICommandService {
     /**
      * Stores all registered commands.
      */
-    List<MethodInfo> commands = new ArrayList<>();
+    List<CommandData> commands = new ArrayList<>();
 
     CommandMessageFactories commandMessageFactories = new CommandMessageFactories();
 
@@ -50,8 +51,8 @@ public interface ICommandService {
             // Method is command
             if (method.isAnnotationPresent(CommandEvent.class)) {
                 final CommandEvent annotation = method.getAnnotation(CommandEvent.class); // Get command annotation
-                final MethodInfo methodInfo = new MethodInfo(object, method, annotation); // Create method info object
-                commands.add(methodInfo); // Put command in list
+                final CommandData commandData = new CommandData(object, method, annotation); // Create method info object
+                this.commands.add(commandData); // Put command in list
             }
         }
     }
@@ -95,7 +96,7 @@ public interface ICommandService {
     /**
      * @return Returns a Map with all registered commands.
      */
-    default List<MethodInfo> getCommands() {
+    default List<CommandData> getCommands() {
         return this.commands;
     }
 

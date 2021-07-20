@@ -1,5 +1,7 @@
 package com.github.m5rian.jdaCommandHandler;
 
+import com.github.m5rian.jdaCommandHandler.command.CommandEvent;
+
 /**
  * @author Marian
  * <p>
