@@ -125,11 +125,12 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                     final List<String> executors = CommandUtils.getCommandExecutors(command.getMethod()); // Get all command executors
                     // Check for every command executor
                     for (String executor : executors) {
-                        final String regex = "(?i)" + executor + "($|\s.*)"; // Command regex
+                        final String regex = "(?i)" + executor + "($|\\s[\\S\\s]*)"; // Command regex
                         // Message matches command regex
                         if (msg.matches(regex)) {
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
+                            System.out.println(commandArguments);
 
                             command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, command, this, this)); // Run command
                             break; // Only run command once
