@@ -4,7 +4,7 @@ It's simple to add aliases, required permissions or specifying the command for o
 
 ## 🏷 Summary
 * [Installation](#-installation)
-* [Adding a basic command handler](#-adding-a-basic-command-handler)
+* [Adding a basic command handler](#%EF%B8%8F-adding-a-basic-command-handler)
 * [Handling commands](#-handling-commands)
 * [Handling slash commands](#-handling-slash-commands)
 * [Dependencies](#-dependencies)
