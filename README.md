@@ -4,7 +4,9 @@ It's simple to add aliases, required permissions or specifying the command for o
 
 ## 🏷 Summary
 * [Installation](#-installation)
-* [Adding a basic command handler](#%EF%B8%8F-adding-a-basic-command-handler)
+* [Adding a basic command handler](#-adding-a-basic-command-handler)
+* [Handling commands](#-handling-commands)
+* [Handling slash commands](#-handling-slash-commands)
 * [Dependencies](#-dependencies)
 
 ## 📀 Installation
@@ -41,6 +43,7 @@ maven {
 ```
 
 ## 🏗️ Adding a basic command handler
+This example shows how you can create a `DefaultCommandService`. This **does not automatically register your commands**.
 ```java
 // Your main class
 public class Bot {
@@ -60,14 +63,13 @@ public class Bot {
                 // Without it the bot won't respond on any commands
                 .addEventListeners(new CommandListener(commandService))
                 .build();
-
-        // Register a command
-        commandService.registerCommandClass(new Ping());
     }
 }
 ```
-You can create as many methods as you want. But make sure your methods have the `CommandEvent` annotation and  
-that the class implements the `CommandHandler`!
+Now let's create some commands. Always remember to **implement the `CommandHandler`, if a class contains commands**.  
+### ⛮ Handling commands
+Before writing in the command class you need to register the class in the command service. To do so use the command register methods, like `DefaultCommandServiceBuilder#registerCommandClass`.  
+After that's done, we create a command. You can create as many command methods as you want, but make sure your methods have the `CommandEvent` annotation.
 ```java
 // A command class
 public class Ping implements CommandHandler {
@@ -80,6 +82,20 @@ public class Ping implements CommandHandler {
         ctx.getChannel().sendMessage("Pong! Who cares about ping :)").queue(); // Send response
     }
 
+}
+```
+### ⛮ Handling slash commands
+Same for SlashCommands. To register one of them use the slash command specific register methods. Then do the following:
+```java
+public class Ping implements CommandHandler {
+
+    @SlashCommandEvent(
+            name = "ping",
+            description = "Check the latency"
+    )
+    public void onResourceFind(SlashCommandContext sctx) {
+        sctx.reply("Pong! Who cares about ping :)").queue();
+    }
 }
 ```
 

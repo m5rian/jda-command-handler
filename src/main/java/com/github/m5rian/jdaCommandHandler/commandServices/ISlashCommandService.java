@@ -3,14 +3,13 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandListener;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
-import com.github.m5rian.jdaCommandHandler.slashCommand.Argument;
-import com.github.m5rian.jdaCommandHandler.slashCommand.Choice;
-import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
-import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandEvent;
+import com.github.m5rian.jdaCommandHandler.slashCommand.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.restaction.CommandEditAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +110,8 @@ public interface ISlashCommandService {
             // Try finding a matching slash command which is already registered by the command handler
             final Optional<SlashCommandData> matchingRegisteredSlashCommand = this.slashCommands.stream().filter(data -> data.getSlashCommand().name().equals(discordSlashCommand.getName())).findFirst();
 
-            // Slash command isn't a registered command
-            if (missingSlashCommands.isEmpty()) {
+            // Slash command of discord doesn't exist anymore
+            if (matchingRegisteredSlashCommand.isEmpty()) {
                 discordSlashCommand.delete().queue(); // Delete discord's slash command
                 deletedSlashCommands++; // Increase amount of deleted slash commands
             }
@@ -155,17 +154,53 @@ public interface ISlashCommandService {
 
         // Register missing slash commands
         missingSlashCommands.forEach(slashCommandData -> {
-            final SlashCommandEvent slashCommand = slashCommandData.getSlashCommand();
+            final SlashCommandEvent slashCommand = slashCommandData.getSlashCommand(); // Get current missing slash command
+            final CommandData command = new CommandData(slashCommand.name(), slashCommand.description()); // Create basic slash command data
 
-            final CommandData command = new CommandData(slashCommand.name(), slashCommand.description());
+            // Add all subcommand sets
+            for (SubcommandSet subcommandSet : slashCommand.subcommandsSets()) {
+                final SubcommandGroupData subcommandGroupData = new SubcommandGroupData(subcommandSet.name(), subcommandSet.description()); // Create basic subcommand group data
+                // Add all subcommands to the subcommands set
+                for (Subcommand subcommand : subcommandSet.subcommands()) {
+                    final SubcommandData subcommandData = new SubcommandData(subcommand.name(), subcommand.description()); // Create basic subcommand data
+                    for (Argument argument : subcommand.args()) {
+                        final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
+                        for (Choice choice : argument.choices()) {
+                            optionData.addChoice(choice.name(), choice.value());
+                        }
+
+                        subcommandData.addOptions(optionData); // Add option to subcommand
+                    }
+
+                    subcommandGroupData.addSubcommands(subcommandData); // Add subcommand to subcommand set data
+                }
+
+                command.addSubcommandGroups(subcommandGroupData); // Add subcommand set data to command
+            }
+            // Add all subcommands
+            for (Subcommand subcommand : slashCommand.subcommands()) {
+                final SubcommandData subcommandData = new SubcommandData(subcommand.name(), subcommand.description()); // Create basic subcommand data
+                // Add all arguments of subcommand
+                for (Argument argument : subcommand.args()) {
+                    final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required()); // Create basic subcommand option data
+                    // Add all choices to option data
+                    for (Choice choice : argument.choices()) {
+                        optionData.addChoice(choice.name(), choice.value()); // Add current choice
+                    }
+                    subcommandData.addOptions(optionData); // Add options to subcommand
+                }
+                command.addSubcommands(subcommandData); // Add subcommand to slash command
+            }
+            // Add all normal type arguments
             for (Argument argument : slashCommandData.getSlashCommand().args()) {
                 // Option type is a normal value
-                final OptionData option = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
+                final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
                 for (Choice choice : argument.choices()) {
-                    option.addChoice(choice.name(), choice.value());
+                    optionData.addChoice(choice.name(), choice.value());
                 }
-                command.addOptions(option);
+                command.addOptions(optionData);
             }
+
             jda.upsertCommand(command).queue(); // Add command to discord
         });
     }

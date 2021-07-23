@@ -25,5 +25,9 @@ public @interface SlashCommandEvent {
      */
     String description();
 
+    SubcommandSet[] subcommandsSets() default {};
+
+    Subcommand[] subcommands() default {};
+
     Argument[] args() default {};
 }
