@@ -70,8 +70,12 @@ public class CommandUtils {
         if (argument.type().canSupportChoices()) {
             final JSONArray choices = new JSONArray(); // Create JSONArray for choices
             for (Choice choice : argument.choices()) {
-                choices.put(new JSONObject().put(choice.name(), choice.value())); // Add choice to JSONArray
+                // Add choice to JSONArray
+                choices.put(new JSONObject()
+                        .put("name", choice.name()) // Name of choice
+                        .put("value", choice.value())); // Value of choice
             }
+            json.put("choices", choices); // Add choices to command
         }
         return new Command.Option(DataObject.fromJson(json.toString())); // Create Option out of JSONObject
     }

@@ -130,7 +130,6 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                         if (msg.matches(regex)) {
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
-                            System.out.println(commandArguments);
 
                             command.getMethod().invoke(command.getInstance(), new CommandContext(finalPrefix, event, commandArguments, command, this, this)); // Run command
                             break; // Only run command once

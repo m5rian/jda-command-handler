@@ -4,10 +4,13 @@ import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandListener;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.slashCommand.Argument;
+import com.github.m5rian.jdaCommandHandler.slashCommand.Choice;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandEditAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +48,6 @@ public interface ISlashCommandService {
                 final SlashCommandEvent commandEventAnnotation = method.getAnnotation(SlashCommandEvent.class); // Get slash command annotation
                 final SlashCommandData commandData = new SlashCommandData(object, method, commandEventAnnotation); // Create method info object
                 this.slashCommands.add(commandData); // Put command in list
-                System.out.println("Added 1 slash command");
             }
         }
     }
@@ -118,6 +120,7 @@ public interface ISlashCommandService {
             else {
                 // Get all data of the registered slash command by the command handler
                 final SlashCommandEvent slashCommandEvent = matchingRegisteredSlashCommand.get().getSlashCommand(); // Get main data of slash command
+                missingSlashCommands.remove(matchingRegisteredSlashCommand.get()); // Remove slash command
 
                 // Get basic data of slash command
                 final String description = slashCommandEvent.description(); // Get the description of the slash command
@@ -136,90 +139,35 @@ public interface ISlashCommandService {
                     arguments.add(option); // Add option
                 }
 
-                if (discordSlashCommand.getOptions() != arguments) {
-                    System.out.println("Updating command arguments");
+                // Arguments are different from each other
+                if (!discordSlashCommand.getOptions().equals(arguments)) {
                     editAction = editAction.clearOptions(); // Clear options
                     for (Command.Option option : arguments) {
-                        editAction = editAction.addOptions(CommandUtils.optionToOptionData(option)); // Add option
+                        final OptionData argument = new OptionData(option.getType(), option.getName(), option.getDescription(), option.isRequired());
+                        option.getChoices().forEach(choice -> argument.addChoice(choice.getName(), choice.getAsString()));
+                        editAction = editAction.addOptions(argument);
                     }
                 }
 
                 editAction.queue(); // Execute editing action
-
-/*
-                // Update all arguments of the slash command
-                final boolean updateOptions = slashCommand.getOptions().stream().anyMatch(option -> {
-                    // Get a matching argument
-                    final Optional<SlashCommandArgument> matchingArgument = slashCommandArguments.stream().filter(argument -> option.getName().equals(argument.name())).findFirst();
-                    if (matchingArgument.isEmpty()) return true;
-
-                    // Create JSONObject for argument
-                    final JSONObject json = new JSONObject()
-                            .put("name", matchingArgument.get().name())
-                            .put("description", matchingArgument.get().description())
-                            .put("type", matchingArgument.get().optionType().getKey());
-
-                    // Slash command argument has choices to choose from
-                    if (matchingArgument.get().optionType().canSupportChoices()) {
-                        final JSONArray choices = new JSONArray(); // Create JSONArray for choices
-                        matchingArgument.get().choices().forEach(choice -> {
-                            System.out.println(choice.getAsLong());
-                            System.out.println(choice.getAsString());
-                            System.out.println("--------------------------------------");
-                            choices.put(new JSONObject().put(choice.getName(), choice.getAsLong())); // Add choice to JSONArray
-                        });
-                    }
-                    final Command.Option currentOption = new Command.Option(DataObject.fromJson(json.toString())); // Create Option out of JSONObject
-                    return !option.equals(currentOption);
-                });
-
-                // A option isn't up to date
-                if (updateOptions) {
-                    editAction = editAction.clearOptions();
-                    for (SlashCommandArgument arg : slashCommandArguments) {
-                        OptionData newArgument = new OptionData(arg.optionType(), arg.name(), arg.description(), arg.required()); // Create argument
-                        // Loop through all choices
-                        for (Command.Choice choice : arg.choices()) {
-                            // Value is a number
-                            if (choice.getAsString().matches("\\d")) {
-                                newArgument = newArgument.addChoices(new Command.Choice(choice.getName(), choice.getAsLong())); // Add choice with long
-                            }
-                            // Value isn't a number
-                            else {
-                                newArgument = newArgument.addChoices(new Command.Choice(choice.getName(), choice.getAsString())); // Add choice with string
-                            }
-                        }
-                        editAction = editAction.addOptions(newArgument);
-                    }
-                }
-
-                if (!editAction.equals(jda.editCommandById(slashCommand.getId()))) {
-                    editAction.queue(); // Push all changes of the slash command
-                    updatedSlashCommands.getAndIncrement();
-                }
-
-                missingSlashCommands.remove(matchingRegisteredSlashCommand.get()); // Remove current slash command from the ones which we need to add
             }
         }
 
+        // Register missing slash commands
+        missingSlashCommands.forEach(slashCommandData -> {
+            final SlashCommandEvent slashCommand = slashCommandData.getSlashCommand();
 
-        currentDiscordSlashCommands.forEach(slashCommand -> {
-
-
-        });
-
-        // Register not registered slash commands
-        missingSlashCommands.stream().map(SlashCommandData::getSlashCommand).forEach(slashCommand -> {
-            jda.upsertCommand(slashCommand.name(), slashCommand.description()).queue(); // Add slash command
-            addedSlashCommands.getAndIncrement();
-        });
-
-        LOGGER.info("Added " + addedSlashCommands.get() + " Slash Commands");
-        LOGGER.info("Updated " + updatedSlashCommands.get() + " Slash Commands");
-        LOGGER.info("Deleted " + deletedSlashCommands.get() + " Slash Commands");
-    });*/
+            final CommandData command = new CommandData(slashCommand.name(), slashCommand.description());
+            for (Argument argument : slashCommandData.getSlashCommand().args()) {
+                // Option type is a normal value
+                final OptionData option = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
+                for (Choice choice : argument.choices()) {
+                    option.addChoice(choice.name(), choice.value());
+                }
+                command.addOptions(option);
             }
-        }
+            jda.upsertCommand(command).queue(); // Add command to discord
+        });
     }
 
     /**
