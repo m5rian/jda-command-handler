@@ -3,9 +3,9 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandListener;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
-import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
-import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandEvent;
+import com.github.m5rian.jdaCommandHandler.slashCommand.*;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.requests.restaction.CommandEditAction;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.requests.Route;
@@ -97,9 +97,9 @@ public interface ISlashCommandService {
     /**
      * Update all slash command changes to Discord.
      */
-    //TODO ich könnte auch die namen verwänden anstatt ne id weil namen auch unique sind, siehe https://discord.com/developers/docs/interactions/slash-commands#registering-a-command
     default void pushChanges(JDA jda) {
         List<SlashCommandData> commandsToRegister = new ArrayList<>(this.slashCommands);
+        System.out.println("before: " + commandsToRegister.size());
 
         Route.CompiledRoute route = Route.Interactions.GET_COMMANDS.compile(jda.getSelfUser().getApplicationId());
         RestActionImpl<DataArray> restAction = new RestActionImpl<>(jda, route, (res, req) -> res.getArray());
@@ -123,8 +123,12 @@ public interface ISlashCommandService {
                     LOGGER.info("Deleting slash command: " + command.getString("name"));
                     jda.deleteCommandById(id).queue(); // Delete command
                     continue; // Stop further code and continue with next command item
-                } else {
+                }
+
+                if (handlerCommandData.isPresent()) {
+                    System.out.println("command already exists !!!!!!!!!");
                     commandsToRegister.remove(handlerCommandData.get());
+                    System.out.println("afteer: " + commandsToRegister.size());
                 }
 
                 final SlashCommandEvent handlerCommand = handlerCommandData.get().getSlashCommand(); // Get handler command with all important data
@@ -135,48 +139,33 @@ public interface ISlashCommandService {
                 System.out.println(handlerJson);
                 System.out.println(command);
 
-
-
-
-/*
-
-                CommandEditAction editAction = jda.editCommandById(commandId); // Create edit action
-
-                // Update name
-                if (handlerCommand.name().equals(command.getString("name"))) {
-                    editAction = editAction.setName(command.getString("name"));
-                }
-                /// Update description
-                if (handlerCommand.description().equals(command.getString("description"))) {
-                    editAction = editAction.setDescription(command.getString("description"));
-                }
+                CommandEditAction editAction = jda.editCommandById(id); // Create edit action
+                editAction = editAction.setDescription(handlerCommand.description()); // Update description
 
                 // Any option changed
-                if (!command.getJSONArray("options").equals(handlerJson.getJSONArray("options"))) {
-                    LOGGER.info(String.format("%s has invalid options, updating", command.getName()));
-                    editAction = editAction.clearOptions()
-                            .addOptions(CommandUtils.optionsToOptionData(command.getOptions()))
-                            .addSubcommands(CommandUtils.subcommandsToSubcommandData(command.getSubcommands()))
-                            .addSubcommandGroups(CommandUtils.subcommandGroupsToSubcommandGroupData(command.getSubcommandGroups()));
+                if (!command.getJSONArray("options").toList().equals(handlerJson.getJSONArray("options").toList())) {
+                    LOGGER.info(handlerCommand.name() + "'s options have changed");
+                    editAction = editAction.clearOptions();
+                    if (handlerCommand.args().length != 0) for (Argument argument : handlerCommand.args()) {
+                        editAction = editAction.addOptions(CommandUtils.argumentToOptionData(argument));
+                    }
+                    if (handlerCommand.subcommands().length != 0) for (Subcommand subcommand : handlerCommand.subcommands()) {
+                        editAction = editAction.addSubcommands(CommandUtils.subcommandToSubcommandData(subcommand));
+                    }
+                    if (handlerCommand.subcommandsSets().length != 0) for (SubcommandSet subcommandSet : handlerCommand.subcommandsSets()) {
+                        editAction = editAction.addSubcommandGroups(CommandUtils.subcommandSetToSubcommandGroupData(subcommandSet));
+                    }
                 }
 
-                editAction.queue(slashCommand -> {
-                    final SlashCommandData slashCommandData = this.slashCommands.stream().filter(s -> s.getSlashCommand().name().equals(slashCommand.getName())).findFirst().get();
-                    final JSONObject updatedJson = CommandUtils.commandToJson(slashCommandData.getSlashCommand())
-                            .put("id", slashCommand.getId());// Add id to slash command json
-                    Storage.SlashCommands.write(slashCommand.getId(), json);
-                }); // Execute editing action
- */
+                editAction.queue(); // Execute editing action
+            }
 
-
+            for (SlashCommandData slashCommandData : commandsToRegister) {
+                LOGGER.info("Registering slash command: " + slashCommandData.getSlashCommand().name());
+                // Register slash command in discord
+                jda.upsertCommand(CommandUtils.slashCommandEventToCommandData(slashCommandData.getSlashCommand())).queue();
             }
         });
-
-        for (SlashCommandData slashCommandData : commandsToRegister) {
-            LOGGER.info("Registering slash command: " + slashCommandData.getSlashCommand().name());
-            // Register slash command in discord
-            jda.upsertCommand(CommandUtils.slashCommandEventToCommandData(slashCommandData.getSlashCommand())).queue();
-        }
     }
         /*
         final List<String> deleted = Storage.SlashCommands.getIds(); // Slash command ids which don't exist anymore
