@@ -4,10 +4,7 @@ import com.github.m5rian.jdaCommandHandler.EventWaiter;
 import com.github.m5rian.jdaCommandHandler.commandServices.IBlacklistService;
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.annotation.Nullable;
@@ -89,6 +86,13 @@ public class CommandContext {
      */
     public MessageChannel getChannel() {
         return this.event.getChannel();
+    }
+
+    /**
+     * @return Returns the send message of the author.
+     */
+    public Message getMessage() {
+        return this.event.getMessage();
     }
 
     /**
