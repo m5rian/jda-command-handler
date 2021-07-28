@@ -3,6 +3,8 @@ package com.github.m5rian.jdaCommandHandler;
 import com.github.m5rian.jdaCommandHandler.commandServices.ICommandService;
 import com.github.m5rian.jdaCommandHandler.commandServices.ISlashCommandService;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -10,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author Marian
@@ -20,6 +25,8 @@ public class CommandListener extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger(ICommandService.class);
     private final ICommandService commandService; // A command service
     private final ISlashCommandService slashCommandService; // A command service for slash commands
+    public static final Map<String, Consumer> buttons = new HashMap<>();
+    public static final Map<String, Consumer> selectionMenus = new HashMap<>();
 
     /**
      * @param commandService A command service.
@@ -72,6 +79,20 @@ public class CommandListener extends ListenerAdapter {
             this.commandService.processCommandExecution(event);
         } catch (Exception exception) {
             exception.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onButtonClick(@Nonnull ButtonClickEvent event) {
+        if (buttons.containsKey(event.getComponentId())) {
+            buttons.get(event.getComponentId()).accept(event);
+        }
+    }
+
+    @Override
+    public void onSelectionMenu(@Nonnull SelectionMenuEvent event) {
+        if (selectionMenus.containsKey(event.getComponentId())) {
+            selectionMenus.get(event.getComponentId()).accept(event);
         }
     }
 }

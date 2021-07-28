@@ -3,6 +3,9 @@ package com.github.m5rian.jdaCommandHandler;
 import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessage;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsage;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
+
+import java.util.function.Consumer;
 
 /**
  * This is the interface, which you need to implement as soon as you want your class to have commands.
@@ -42,6 +45,14 @@ public interface CommandHandler {
      */
     default CommandUsage usage(CommandContext ctx) {
         return ctx.getCommandService().executeUsage(ctx);
+    }
+
+    default void onButtonEvent(String id, Consumer<SelectionMenuEvent> event) {
+        CommandListener.buttons.put(id, event);
+    }
+
+    default void onSelectionMenuEvent(String id, Consumer<SelectionMenuEvent> event) {
+        CommandListener.selectionMenus.put(id, event);
     }
 
 }
