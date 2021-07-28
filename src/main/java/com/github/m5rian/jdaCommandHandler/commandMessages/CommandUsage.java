@@ -23,6 +23,7 @@ public class CommandUsage {
     // Other
     private final CommandContext ctx;
     private final boolean reply; // Should the message be a reply?
+    private final boolean mention; // Should the member get mentioned when replying?
     // Base message
     private String message;
     // Command usages
@@ -36,7 +37,7 @@ public class CommandUsage {
     private String[] forbiddenMethods = null; // Names of methods which shouldn't get added
 
     public CommandUsage(String message, BiFunction<CommandContext, CommandEvent, String> text, EmbedBuilder embed, BiFunction<CommandContext, CommandEvent, String> description, BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field,
-                        CommandContext ctx, boolean reply) {
+                        CommandContext ctx, boolean reply, boolean mention) {
         // Base message
         this.message = message;
         this.embed = embed;
@@ -47,6 +48,7 @@ public class CommandUsage {
         // Other
         this.ctx = ctx;
         this.reply = reply;
+        this.mention = mention;
     }
 
     public CommandUsage addInlineField(String name, String value) {
@@ -147,9 +149,16 @@ public class CommandUsage {
 
         // Reply
         if (this.reply) {
-            if (!this.message.isEmpty() && this.embed.isEmpty()) msg.reply(this.message).queue();
-            if (!this.message.isEmpty() && !this.embed.isEmpty()) msg.reply(this.message).setEmbeds(this.embed.build()).queue();
-            if (this.message.isEmpty() && !this.embed.isEmpty()) msg.replyEmbeds(this.embed.build()).queue();
+            if (mention) {
+                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(true).queue();
+                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true).queue();
+                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true).queue();
+            }
+            else {
+                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(false).queue();
+                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false).queue();
+                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false).queue();
+            }
         }
         // Don't reply
         else {

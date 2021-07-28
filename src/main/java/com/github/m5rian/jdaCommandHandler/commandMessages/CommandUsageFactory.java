@@ -18,6 +18,7 @@ public class CommandUsageFactory {
     private BiFunction<CommandContext, CommandEvent, MessageEmbed.Field> field = null;
     // Other
     private boolean reply = false;
+    private boolean mention = false;
 
     public CommandUsageFactory setDefaultMessage(Function<CommandContext, String> message) {
         this.message = message;
@@ -44,8 +45,9 @@ public class CommandUsageFactory {
         return this;
     }
 
-    public CommandUsageFactory reply() {
+    public CommandUsageFactory reply(boolean mention) {
         this.reply = true;
+        this.mention = mention;
         return this;
     }
 
@@ -60,7 +62,7 @@ public class CommandUsageFactory {
         // Default embed is ste
         if (this.embed != null) embed = this.embed.apply(ctx);
 
-        return new CommandUsage(message, this.text, embed, this.description, this.field, ctx, this.reply); // Return command usage
+        return new CommandUsage(message, this.text, embed, this.description, this.field, ctx, this.reply, this.mention); // Return command usage
     }
 
     private void check() {

@@ -36,6 +36,7 @@ public class CommandMessageFactory {
     private Function<CommandContext, String> footer = null; // Footer text
     // Other
     private boolean reply = false; // Should the message be a reply?
+    private boolean mention = false; // Should the reply be a mention?
 
     /**
      * @param message Normal text message, without embed.
@@ -148,10 +149,12 @@ public class CommandMessageFactory {
     /**
      * Make the message a reply
      *
+     * @param mention Should the bot mention the member on a reply?
      * @return Returns the current {@link CommandMessageFactory} for method chaining.
      */
-    public CommandMessageFactory reply() {
+    public CommandMessageFactory reply(boolean mention) {
         this.reply = true;
+        this.mention = mention;
         return this;
     }
 
@@ -179,7 +182,8 @@ public class CommandMessageFactory {
                 this.footer,
                 // Other
                 ctx,
-                this.reply);
+                this.reply,
+                this.mention);
     }
 
 }

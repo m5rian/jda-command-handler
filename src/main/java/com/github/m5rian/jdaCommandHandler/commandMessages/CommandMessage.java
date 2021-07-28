@@ -33,6 +33,7 @@ public class CommandMessage {
     private String footer = null;
     private Instant timestamp;
     private boolean reply;
+    private boolean mention;
 
     /**
      * Is called by a {@link CommandMessageFactory} to create an editable preset.
@@ -48,6 +49,7 @@ public class CommandMessage {
      * @param fields       All {@link MessageEmbed.Field}s.
      * @param ctx          A {@link CommandContext}.
      * @param reply        Should the send message be a reply?
+     * @param mention      Should the bot mention the member on a reply?
      */
     public CommandMessage(
             // Message
@@ -66,7 +68,8 @@ public class CommandMessage {
             Function<CommandContext, String> footer,
             // Other
             CommandContext ctx,
-            boolean reply
+            boolean reply,
+            boolean mention
     ) {
         // Message
         if (message != null) this.message = message.apply(ctx);
@@ -87,6 +90,7 @@ public class CommandMessage {
         // Other
         this.ctx = ctx;
         this.reply = reply;
+        this.mention = mention;
     }
 
     /**
@@ -291,9 +295,16 @@ public class CommandMessage {
         final EmbedBuilder embed = getEmbed(); // Get embed
         // Reply to messages
         if (reply) {
-            if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).queue();
-            if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).queue();
-            if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).queue();
+            if (mention) {
+                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(true).queue();
+                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true).queue();
+                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true).queue();
+            }
+            else {
+                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(false).queue();
+                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false).queue();
+                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false).queue();
+            }
         }
         // Send as normal message
         else {
