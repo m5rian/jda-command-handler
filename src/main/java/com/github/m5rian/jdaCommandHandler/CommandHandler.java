@@ -20,7 +20,7 @@ public interface CommandHandler {
      * @return Returns a preset {@link CommandMessage} to info something with as a message.
      */
     default CommandMessage info(CommandContext ctx) {
-        return ctx.getCommandService().executeInfo(ctx);
+        return CommandUtils.infoFactory.invoke(ctx);
     }
 
     /**
@@ -28,7 +28,7 @@ public interface CommandHandler {
      * @return Returns a preset {@link CommandMessage} to warn as a message.
      */
     default CommandMessage warn(CommandContext ctx) {
-        return ctx.getCommandService().executeInfo(ctx);
+        return CommandUtils.warningFactory.invoke(ctx);
     }
 
     /**
@@ -36,7 +36,7 @@ public interface CommandHandler {
      * @return Returns a preset {@link CommandMessage} to display an error as a message.
      */
     default CommandMessage error(CommandContext ctx) {
-        return ctx.getCommandService().executeInfo(ctx);
+        return CommandUtils.errorFactory.invoke(ctx);
     }
 
     /**
@@ -44,7 +44,7 @@ public interface CommandHandler {
      * @return Returns a preset {@link CommandMessage} to display an error as a message.
      */
     default CommandUsage usage(CommandContext ctx) {
-        return ctx.getCommandService().executeUsage(ctx);
+        return CommandUtils.usageFactory.invoke(ctx);
     }
 
     default void onButtonEvent(String id, Consumer<SelectionMenuEvent> event) {

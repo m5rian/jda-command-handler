@@ -1,6 +1,8 @@
 package com.github.m5rian.jdaCommandHandler;
 
 import com.github.m5rian.jdaCommandHandler.command.CommandEvent;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
+import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.slashCommand.*;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -19,6 +21,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommandUtils {
+
+    public static CommandMessageFactory infoFactory = new CommandMessageFactory();
+    public static CommandMessageFactory warningFactory = new CommandMessageFactory();
+    public static CommandMessageFactory errorFactory = new CommandMessageFactory();
+    public static CommandUsageFactory usageFactory = new CommandUsageFactory();
 
     /**
      * @param method The command method

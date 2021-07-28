@@ -43,7 +43,6 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
                                  List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
-                                 CommandMessageFactory infoFactory, CommandMessageFactory warningFactory, CommandMessageFactory errorFactory, CommandUsageFactory usageFactory,
                                  BiConsumer<MessageReceivedEvent, Throwable> errorHandler) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
@@ -53,17 +52,11 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
         this.allowMention = allowMention;
         // Blacklist
         if (!userBlacklist.isEmpty()) this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
-        // Register all commands
-        commands.forEach(this::registerCommandClass);
-        // Register slashCommands
-        slashCommands.forEach(this::registerSlashCommandClass);
-        // Set command factories
-        this.commandMessageFactories.setInfoFactory(infoFactory);
-        this.commandMessageFactories.setWarningFactory(warningFactory);
-        this.commandMessageFactories.setErrorFactory(errorFactory);
-        this.commandMessageFactories.setCommandUsageFactory(usageFactory);
-        // Set error handler
-        this.errorHandler = errorHandler;
+
+        commands.forEach(this::registerCommandClass); // Register all commands
+        slashCommands.forEach(this::registerSlashCommandClass); // Register slashCommands
+
+        this.errorHandler = errorHandler; // Register slashCommands
 
         this.registerPermission(new Everyone()); // Register default role
     }

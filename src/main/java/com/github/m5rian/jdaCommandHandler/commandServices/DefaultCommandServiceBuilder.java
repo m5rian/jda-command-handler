@@ -1,9 +1,9 @@
 package com.github.m5rian.jdaCommandHandler.commandServices;
 
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
+import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -26,11 +26,8 @@ public class DefaultCommandServiceBuilder {
     private String defaultPrefix;
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
-    private CommandMessageFactory infoFactory;
     private List<String> userBlacklist = new ArrayList<>();
-    private CommandMessageFactory warningFactory;
-    private CommandMessageFactory errorFactory;
-    private CommandUsageFactory usageFactory;
+
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
@@ -98,22 +95,22 @@ public class DefaultCommandServiceBuilder {
     }
 
     public DefaultCommandServiceBuilder setInfoFactory(CommandMessageFactory infoFactory) {
-        this.infoFactory = infoFactory;
+        CommandUtils.infoFactory = infoFactory;
         return this;
     }
 
-    public DefaultCommandServiceBuilder setWarningFactory(CommandMessageFactory infoFactory) {
-        this.infoFactory = infoFactory;
+    public DefaultCommandServiceBuilder setWarningFactory(CommandMessageFactory warningFactory) {
+        CommandUtils.warningFactory = warningFactory;
         return this;
     }
 
-    public DefaultCommandServiceBuilder setErrorFactory(CommandMessageFactory infoFactory) {
-        this.infoFactory = infoFactory;
+    public DefaultCommandServiceBuilder setErrorFactory(CommandMessageFactory errorFactory) {
+        CommandUtils.errorFactory = errorFactory;
         return this;
     }
 
     public DefaultCommandServiceBuilder setUsageFactory(CommandUsageFactory usageFactory) {
-        this.usageFactory = usageFactory;
+        CommandUtils.usageFactory = usageFactory;
         return this;
     }
 
@@ -143,10 +140,6 @@ public class DefaultCommandServiceBuilder {
 
                 this.userBlacklist,
 
-                this.infoFactory,
-                this.warningFactory,
-                this.errorFactory,
-                this.usageFactory,
                 this.errorHandler
         );
     }
