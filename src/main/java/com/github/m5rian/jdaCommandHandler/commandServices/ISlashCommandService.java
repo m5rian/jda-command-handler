@@ -3,14 +3,14 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandListener;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
-import com.github.m5rian.jdaCommandHandler.slashCommand.*;
+import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
+import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandEvent;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
-import net.dv8tion.jda.api.requests.restaction.CommandEditAction;
+import net.dv8tion.jda.api.utils.data.DataArray;
+import net.dv8tion.jda.internal.requests.RestActionImpl;
+import net.dv8tion.jda.internal.requests.Route;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +97,231 @@ public interface ISlashCommandService {
     /**
      * Update all slash command changes to Discord.
      */
+    //TODO ich könnte auch die namen verwänden anstatt ne id weil namen auch unique sind, siehe https://discord.com/developers/docs/interactions/slash-commands#registering-a-command
     default void pushChanges(JDA jda) {
-        int updatedSlashCommands = 0;
+        List<SlashCommandData> commandsToRegister = new ArrayList<>(this.slashCommands);
+
+        Route.CompiledRoute route = Route.Interactions.GET_COMMANDS.compile(jda.getSelfUser().getApplicationId());
+        RestActionImpl<DataArray> restAction = new RestActionImpl<>(jda, route, (res, req) -> res.getArray());
+        restAction.queue(json -> {
+            final JSONArray commands = new JSONArray(json);
+            for (int i = 0; i < commands.length(); i++) {
+                final JSONObject command = commands.getJSONObject(i);
+                final String id = command.getString("id"); // Get id of command
+                // Remove not used variables by my command handler
+                command.remove("default_permission");
+                command.remove("id");
+                command.remove("type");
+                command.remove("application_id");
+                command.remove("version");
+                final String name = command.getString("name");
+
+                // Try finding a matching slash command from my command handler
+                final Optional<SlashCommandData> handlerCommandData = this.slashCommands.stream().filter(slashCommandData -> slashCommandData.getSlashCommand().name().equals(name)).findFirst();
+                // Command doesn't exist anymore
+                if (handlerCommandData.isEmpty()) {
+                    LOGGER.info("Deleting slash command: " + command.getString("name"));
+                    jda.deleteCommandById(id).queue(); // Delete command
+                    continue; // Stop further code and continue with next command item
+                } else {
+                    commandsToRegister.remove(handlerCommandData.get());
+                }
+
+                final SlashCommandEvent handlerCommand = handlerCommandData.get().getSlashCommand(); // Get handler command with all important data
+                final JSONObject handlerJson = CommandUtils.commandToJson(handlerCommand);
+                // Command didn't change
+                if (handlerJson.equals(command)) continue;
+
+                System.out.println(handlerJson);
+                System.out.println(command);
+
+
+
+
+/*
+
+                CommandEditAction editAction = jda.editCommandById(commandId); // Create edit action
+
+                // Update name
+                if (handlerCommand.name().equals(command.getString("name"))) {
+                    editAction = editAction.setName(command.getString("name"));
+                }
+                /// Update description
+                if (handlerCommand.description().equals(command.getString("description"))) {
+                    editAction = editAction.setDescription(command.getString("description"));
+                }
+
+                // Any option changed
+                if (!command.getJSONArray("options").equals(handlerJson.getJSONArray("options"))) {
+                    LOGGER.info(String.format("%s has invalid options, updating", command.getName()));
+                    editAction = editAction.clearOptions()
+                            .addOptions(CommandUtils.optionsToOptionData(command.getOptions()))
+                            .addSubcommands(CommandUtils.subcommandsToSubcommandData(command.getSubcommands()))
+                            .addSubcommandGroups(CommandUtils.subcommandGroupsToSubcommandGroupData(command.getSubcommandGroups()));
+                }
+
+                editAction.queue(slashCommand -> {
+                    final SlashCommandData slashCommandData = this.slashCommands.stream().filter(s -> s.getSlashCommand().name().equals(slashCommand.getName())).findFirst().get();
+                    final JSONObject updatedJson = CommandUtils.commandToJson(slashCommandData.getSlashCommand())
+                            .put("id", slashCommand.getId());// Add id to slash command json
+                    Storage.SlashCommands.write(slashCommand.getId(), json);
+                }); // Execute editing action
+ */
+
+
+            }
+        });
+
+        for (SlashCommandData slashCommandData : commandsToRegister) {
+            LOGGER.info("Registering slash command: " + slashCommandData.getSlashCommand().name());
+            // Register slash command in discord
+            jda.upsertCommand(CommandUtils.slashCommandEventToCommandData(slashCommandData.getSlashCommand())).queue();
+        }
+    }
+        /*
+        final List<String> deleted = Storage.SlashCommands.getIds(); // Slash command ids which don't exist anymore
+        final List<SlashCommandData> missing = new ArrayList<>(this.slashCommands); // Commands which aren't registered yet
+
+        jda.retrieveCommands().queue(commands -> {
+            for (Command discordCommand : commands) {
+                final String commandId = discordCommand.getId();
+
+                // Slash command is valid
+                if (Storage.SlashCommands.exists(commandId)) {
+                    LOGGER.info(String.format("%s has invalid data, updating", discordCommand.getName()));
+
+                    // Remove slash command from missing slash commands
+                    missing.remove(missing.stream().filter(slashCommandData -> slashCommandData.getSlashCommand().name().equals(discordCommand.getName())).findFirst().get());
+                    deleted.remove(commandId); // Remove slash command id from deleted ones
+
+                    final String json = Storage.SlashCommands.read(commandId);
+                    final Command command = new Command((JDAImpl) jda, null, DataObject.fromJson(json));
+                    if (command.equals(discordCommand)) continue;
+
+                    CommandEditAction editAction = jda.editCommandById(commandId); // Create edit action
+
+                    // Update name
+                    if (discordCommand.getName().equals(command.getName())) {
+                        editAction = editAction.setName(command.getName());
+                    }
+                    /// Update description
+                    if (discordCommand.getDescription().equals(command.getDescription())) {
+                        editAction = editAction.setDescription(command.getDescription());
+                    }
+
+                    // Any option changed
+                    if (!discordCommand.getOptions().equals(command.getOptions()) || !discordCommand.getSubcommands().equals(command.getSubcommands()) || !discordCommand.getSubcommandGroups().equals(command.getSubcommandGroups())) {
+                        LOGGER.info(String.format("%s has invalid options, updating", discordCommand.getName()));
+                        editAction = editAction.clearOptions()
+                                .addOptions(CommandUtils.optionsToOptionData(command.getOptions()))
+                                .addSubcommands(CommandUtils.subcommandsToSubcommandData(command.getSubcommands()))
+                                .addSubcommandGroups(CommandUtils.subcommandGroupsToSubcommandGroupData(command.getSubcommandGroups()));
+                    }
+
+                    editAction.queue(slashCommand -> {
+                        final SlashCommandData slashCommandData = this.slashCommands.stream().filter(s -> s.getSlashCommand().name().equals(slashCommand.getName())).findFirst().get();
+                        final JSONObject updatedJson = CommandUtils.commandToJson(slashCommandData.getSlashCommand())
+                                .put("id", slashCommand.getId());// Add id to slash command json
+                        Storage.SlashCommands.write(slashCommand.getId(), json);
+                    }); // Execute editing action
+                    CommandEditAction editAction = jda.editCommandById(commandId); // Create edit action
+
+                    // Update name
+                    if (discordCommand.getName().equals(command.getName())) {
+                        editAction = editAction.setName(command.getName());
+                    }
+                    /// Update description
+                    if (discordCommand.getDescription().equals(command.getDescription())) {
+                        editAction = editAction.setDescription(command.getDescription());
+                    }
+
+                    // Any option changed
+                    if (!discordCommand.getOptions().equals(command.getOptions()) || !discordCommand.getSubcommands().equals(command.getSubcommands()) || !discordCommand.getSubcommandGroups().equals(command.getSubcommandGroups())) {
+                        LOGGER.info(String.format("%s has invalid options, updating", discordCommand.getName()));
+                        editAction = editAction.clearOptions()
+                                .addOptions(CommandUtils.optionsToOptionData(command.getOptions()))
+                                .addSubcommands(CommandUtils.subcommandsToSubcommandData(command.getSubcommands()))
+                                .addSubcommandGroups(CommandUtils.subcommandGroupsToSubcommandGroupData(command.getSubcommandGroups()));
+                    }
+
+                    editAction.queue(slashCommand -> {
+                        final SlashCommandData slashCommandData = this.slashCommands.stream().filter(s -> s.getSlashCommand().name().equals(slashCommand.getName())).findFirst().get();
+                        final JSONObject updatedJson = CommandUtils.commandToJson(slashCommandData.getSlashCommand())
+                                .put("id", slashCommand.getId());// Add id to slash command json
+                        Storage.SlashCommands.write(slashCommand.getId(), json);
+                    }); // Execute editing action
+                }
+                // Slash command doesn't exist anymore
+                else {
+                    discordCommand.delete().queue(); // Delete command
+                }
+            }
+        });
+
+        // Register missing slash commands
+        for (SlashCommandData slashCommandData : missing) {
+            // Register slash command in discord
+            jda.upsertCommand(CommandUtils.slashCommandEventToCommandData(slashCommandData.getSlashCommand())).queue(slashCommand -> {
+                LOGGER.info(String.format("Registered slash command %s", slashCommand.getName()));
+
+                deleted.remove(slashCommand.getId()); // Remove slash command id from deleted ones
+                // Save slash command in file
+                final JSONObject json = CommandUtils.commandToJson(slashCommandData.getSlashCommand())
+                        .put("id", slashCommand.getId());// Add id to slash command json
+                Storage.SlashCommands.write(slashCommand.getId(), json.toString());
+            });
+        }
+
+        for (String id : deleted) {
+            Storage.SlashCommands.delete(id); // Delete unused files
+        }
+    }
+
+/*
+        Route.CompiledRoute route = Route.Interactions.GET_COMMANDS.compile(jda.getSelfUser().getApplicationId());
+        RestActionImpl<DataArray> restAction = new RestActionImpl<>(jda, route, (res, req) -> res.getArray());
+        restAction.queue(json -> {      Route.CompiledRoute route = Route.Interactions.GET_COMMANDS.compile(jda.getSelfUser().getApplicationId());
+        RestActionImpl<DataArray> restAction = new RestActionImpl<>(jda, route, (res, req) -> res.getArray());
+        restAction.queue(json -> {
+            if (!Storage.SlashCommands.exists()) {
+                Storage.SlashCommands.create();
+            }
+
+            System.out.println(json.toString());
+            final String[] slashCommands = Storage.SlashCommands.read();
+            final JSONArray discordCommands = new JSONArray(json.toString());
+
+            for (int i = 0; i < discordCommands.length(); i++) {
+                final JSONObject discordCommand = discordCommands.getJSONObject(i).equals()
+
+                this.slashCommands.stream().filter(slashCommand -> {
+                    final JSONObject slashCommand = CommandUtils.commandToJson(slashCommand.getSlashCommand());
+                    return true;
+                });
+            }
+
+
+            try {
+                File folder = new File("commandHandler");
+                if (!folder.exists()) {
+                    folder.mkdir();
+
+                    File file = new File("commandHandler/slashCommands.txt");
+                    if (!file.exists()) file.createNewFile();
+                }
+                PrintWriter writer = new PrintWriter("commandHandler/slashCommands.txt", StandardCharsets.UTF_8);
+                writer.println("857981589137129472:868811029528854548");
+                writer.close();
+
+                final String s = new String(Files.readAllBytes(Path.of("commandHandler/slashCommands.txt")));
+                System.out.println(s);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+
+      /*  int updatedSlashCommands = 0;
         int addedSlashCommands = 0;
         int deletedSlashCommands = 0;
 
@@ -127,25 +350,28 @@ public interface ISlashCommandService {
 
                 CommandEditAction editAction = discordSlashCommand.editCommand(); // Create a action to edit the command
 
-                // Update basic values
-                if (!discordSlashCommand.getName().equals(name)) editAction = editAction.setName(name); // Update name of command
-                if (!discordSlashCommand.getDescription().equals(description))
+                // Description has changed
+                if (!discordSlashCommand.getDescription().equals(description)) {
                     editAction = editAction.setDescription(description); // Update description of command
-
-                final List<Command.Option> arguments = new ArrayList<>();
-                for (Argument arg : slashCommandEvent.args()) {
-                    final Command.Option option = CommandUtils.argumentToCommandOption(arg); // Convert argument to command option
-                    arguments.add(option); // Add option
                 }
 
-                // Arguments are different from each other
-                if (!discordSlashCommand.getOptions().equals(arguments)) {
+
+                final boolean equalsOptions = CommandUtils.argumentsToOptions(slashCommandEvent.args()).equals(discordSlashCommand.getOptions());
+                final boolean equalsSubcommands = CommandUtils.subcommandsToSubcommands(slashCommandEvent.subcommands()).equals(discordSlashCommand.gets());
+                final boolean equalsSubcommandGroups = CommandUtils.subcommandSetsToSubcommandGroups(slashCommandEvent.subcommandsSets()).equals(discordSlashCommand.getSubcommandGroups());
+
+                // A option doesn't match anymore
+                if (!equalsOptions || !equalsSubcommands || !equalsSubcommandGroups) {
                     editAction = editAction.clearOptions(); // Clear options
-                    for (Command.Option option : arguments) {
-                        final OptionData argument = new OptionData(option.getType(), option.getName(), option.getDescription(), option.isRequired());
-                        option.getChoices().forEach(choice -> argument.addChoice(choice.getName(), choice.getAsString()));
-                        editAction = editAction.addOptions(argument);
-                    }
+
+                    final List<OptionData> optionData = CommandUtils.optionsToOptionData(CommandUtils.argumentsToOptions(slashCommandEvent.args()));
+                    final List<SubcommandData> subcommandData = CommandUtils.subcommandsToSubcommandData(CommandUtils.subcommandsToSubcommands(slashCommandEvent.subcommands()));
+                    final List<SubcommandGroupData> subcommandGroupData = CommandUtils.subcommandGroupsToSubcommandGroupData(CommandUtils.subcommandSetsToSubcommandGroups(slashCommandEvent.subcommandsSets()));
+
+                    editAction = editAction
+                            .addOptions(optionData)
+                            .addSubcommands(subcommandData)
+                            .addSubcommandGroups(subcommandGroupData);
                 }
 
                 editAction.queue(); // Execute editing action
@@ -159,51 +385,22 @@ public interface ISlashCommandService {
 
             // Add all subcommand sets
             for (SubcommandSet subcommandSet : slashCommand.subcommandsSets()) {
-                final SubcommandGroupData subcommandGroupData = new SubcommandGroupData(subcommandSet.name(), subcommandSet.description()); // Create basic subcommand group data
-                // Add all subcommands to the subcommands set
-                for (Subcommand subcommand : subcommandSet.subcommands()) {
-                    final SubcommandData subcommandData = new SubcommandData(subcommand.name(), subcommand.description()); // Create basic subcommand data
-                    for (Argument argument : subcommand.args()) {
-                        final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
-                        for (Choice choice : argument.choices()) {
-                            optionData.addChoice(choice.name(), choice.value());
-                        }
-
-                        subcommandData.addOptions(optionData); // Add option to subcommand
-                    }
-
-                    subcommandGroupData.addSubcommands(subcommandData); // Add subcommand to subcommand set data
-                }
-
+                final SubcommandGroupData subcommandGroupData = CommandUtils.subcommandSetToSubcommandGroupData(subcommandSet);
                 command.addSubcommandGroups(subcommandGroupData); // Add subcommand set data to command
             }
             // Add all subcommands
             for (Subcommand subcommand : slashCommand.subcommands()) {
-                final SubcommandData subcommandData = new SubcommandData(subcommand.name(), subcommand.description()); // Create basic subcommand data
-                // Add all arguments of subcommand
-                for (Argument argument : subcommand.args()) {
-                    final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required()); // Create basic subcommand option data
-                    // Add all choices to option data
-                    for (Choice choice : argument.choices()) {
-                        optionData.addChoice(choice.name(), choice.value()); // Add current choice
-                    }
-                    subcommandData.addOptions(optionData); // Add options to subcommand
-                }
+                final SubcommandData subcommandData = CommandUtils.subcommandToSubcommandData(subcommand);
                 command.addSubcommands(subcommandData); // Add subcommand to slash command
             }
             // Add all normal type arguments
             for (Argument argument : slashCommandData.getSlashCommand().args()) {
-                // Option type is a normal value
-                final OptionData optionData = new OptionData(argument.type(), argument.name(), argument.description(), argument.required());
-                for (Choice choice : argument.choices()) {
-                    optionData.addChoice(choice.name(), choice.value());
-                }
+                final OptionData optionData = CommandUtils.argumentToOptionData(argument);
                 command.addOptions(optionData);
             }
 
             jda.upsertCommand(command).queue(); // Add command to discord
-        });
-    }
+        });*/
 
     /**
      * Runs once a message received.
