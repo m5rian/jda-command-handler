@@ -140,10 +140,16 @@ public interface ISlashCommandService {
                 System.out.println(command);
 
                 CommandEditAction editAction = jda.editCommandById(id); // Create edit action
-                editAction = editAction.setDescription(handlerCommand.description()); // Update description
+                boolean edit = false;
+                if (!command.getString("description").equals(handlerCommand.description())) {
+                    edit = true;
+                    editAction = editAction.setDescription(handlerCommand.description()); // Update description
+                }
+
 
                 // Any option changed
                 if (!command.getJSONArray("options").toList().equals(handlerJson.getJSONArray("options").toList())) {
+                    edit = true;
                     LOGGER.info(handlerCommand.name() + "'s options have changed");
                     editAction = editAction.clearOptions();
                     if (handlerCommand.args().length != 0) for (Argument argument : handlerCommand.args()) {
@@ -157,7 +163,7 @@ public interface ISlashCommandService {
                     }
                 }
 
-                editAction.queue(); // Execute editing action
+                if (edit) editAction.queue(); // Execute editing action
             }
 
             for (SlashCommandData slashCommandData : commandsToRegister) {
