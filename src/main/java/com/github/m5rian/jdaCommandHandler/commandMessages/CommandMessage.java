@@ -289,11 +289,19 @@ public class CommandMessage {
         check(); // Check for various errors
 
         final EmbedBuilder embed = getEmbed(); // Get embed
-
-        final MessageChannel channel = this.ctx.getChannel();
-        if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
-        if (this.message != null && !embed.isEmpty()) channel.sendMessage(this.message).embed(embed.build()).queue();
-        if (this.message == null && !embed.isEmpty()) channel.sendMessage(embed.build()).queue();
+        // Reply to messages
+        if (reply) {
+            if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).queue();
+            if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).queue();
+            if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).queue();
+        }
+        // Send as normal message
+        else {
+            final MessageChannel channel = this.ctx.getChannel();
+            if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
+            if (this.message != null && !embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(embed.build()).queue();
+            if (this.message == null && !embed.isEmpty()) channel.sendMessageEmbeds(embed.build()).queue();
+        }
     }
 
     /**

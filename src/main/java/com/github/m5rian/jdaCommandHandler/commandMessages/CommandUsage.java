@@ -148,14 +148,14 @@ public class CommandUsage {
         // Reply
         if (this.reply) {
             if (!this.message.isEmpty() && this.embed.isEmpty()) msg.reply(this.message).queue();
-            if (!this.message.isEmpty() && !this.embed.isEmpty()) msg.reply(this.message).embed(this.embed.build()).queue();
-            if (this.message.isEmpty() && !this.embed.isEmpty()) msg.reply(this.embed.build()).queue();
+            if (!this.message.isEmpty() && !this.embed.isEmpty()) msg.reply(this.message).setEmbeds(this.embed.build()).queue();
+            if (this.message.isEmpty() && !this.embed.isEmpty()) msg.replyEmbeds(this.embed.build()).queue();
         }
         // Don't reply
         else {
             if (!this.message.isEmpty() && this.embed.isEmpty()) channel.sendMessage(this.message).queue();
-            if (!this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessage(this.message).embed(this.embed.build()).queue();
-            if (this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessage(this.embed.build()).queue();
+            if (!this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(this.embed.build()).queue();
+            if (this.message.isEmpty() && !this.embed.isEmpty()) channel.sendMessageEmbeds(this.embed.build()).queue();
         }
     }
 
