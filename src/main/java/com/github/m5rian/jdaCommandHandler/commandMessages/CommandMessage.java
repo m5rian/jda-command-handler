@@ -4,10 +4,15 @@ import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Component;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
 import java.awt.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -32,6 +37,9 @@ public class CommandMessage {
     private String image = null;
     private String footer = null;
     private Instant timestamp;
+
+    private final List<Component> components = new ArrayList<>();
+
     private boolean reply;
     private boolean mention;
 
@@ -274,6 +282,22 @@ public class CommandMessage {
         return this;
     }
 
+    public CommandMessage addComponents(ActionRow actionRow) {
+        this.components.addAll(actionRow.getComponents());
+        this.components.addAll(actionRow.getButtons());
+        return this;
+    }
+
+    public CommandMessage addComponents(Component... components) {
+        this.components.addAll(Arrays.asList(components));
+        return this;
+    }
+
+    public CommandMessage addComponents(Collection<? extends Component> components) {
+        this.components.addAll(components);
+        return this;
+    }
+
     /**
      * Overrides the current {@link CommandMessage#reply}.
      *
@@ -295,16 +319,26 @@ public class CommandMessage {
         final EmbedBuilder embed = getEmbed(); // Get embed
         // Reply to messages
         if (reply) {
+            MessageAction messageAction = null;
+
+            // Reply should mention the user
             if (mention) {
-                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(true).queue();
-                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true).queue();
-                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true).queue();
+                if (this.message != null && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
+                if (this.message != null && !embed.isEmpty())
+                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
+                if (this.message == null && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
             }
+            // Reply shouldn't mention the user
             else {
-                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(false).queue();
-                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false).queue();
-                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false).queue();
+                if (this.message != null && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
+                if (this.message != null && !embed.isEmpty())
+                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
+                if (this.message == null && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
             }
+
+            if (components.size() != 0) {
+                messageAction.setActionRow(this.components).queue();
+            } else messageAction.queue();
         }
         // Send as normal message
         else {
