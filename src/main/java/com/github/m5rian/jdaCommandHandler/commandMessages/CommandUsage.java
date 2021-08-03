@@ -150,14 +150,14 @@ public class CommandUsage {
         // Reply
         if (this.reply) {
             if (mention) {
-                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(true).queue();
-                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true).queue();
-                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true).queue();
+                if (!this.message.isEmpty() && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(true).queue();
+                if (!this.message.isEmpty() && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true).queue();
+                if (this.message.isEmpty() && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true).queue();
             }
             else {
-                if (this.message != null && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(false).queue();
-                if (this.message != null && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false).queue();
-                if (this.message == null && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false).queue();
+                if (!this.message.isEmpty() && embed.isEmpty()) ctx.getMessage().reply(this.message).mentionRepliedUser(false).queue();
+                if (!this.message.isEmpty() && !embed.isEmpty()) ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false).queue();
+                if (this.message.isEmpty() && !embed.isEmpty()) ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false).queue();
             }
         }
         // Don't reply
