@@ -132,10 +132,12 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                 i++;
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
+                break;
             }
             // A required permissions isn't registered
             catch (NotRegisteredException notRegisteredException) {
                 notRegisteredException.printStackTrace();
+                break;
             }
             // Error is thrown in the original method
             catch (InvocationTargetException e) {
@@ -144,6 +146,7 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                 } else {
                     e.getCause().printStackTrace();
                 }
+                break;
             }
     }
 
