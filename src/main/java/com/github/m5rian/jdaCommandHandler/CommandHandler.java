@@ -3,6 +3,7 @@ package com.github.m5rian.jdaCommandHandler;
 import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessage;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsage;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 
 import java.util.function.Consumer;
@@ -47,7 +48,7 @@ public interface CommandHandler {
         return CommandUtils.usageFactory.invoke(ctx);
     }
 
-    default void onButtonEvent(String id, Consumer<SelectionMenuEvent> event) {
+    default void onButtonEvent(String id, Consumer<ButtonClickEvent> event) {
         CommandListener.buttons.put(id, event);
     }
 
