@@ -55,4 +55,12 @@ public interface CommandHandler {
         CommandListener.selectionMenus.put(id, event);
     }
 
+
+    default void finishButton(String id) {
+        CommandListener.buttons.remove(id);
+    }
+
+    default void finishSelectionMenu(String id) {
+        CommandListener.selectionMenus.remove(id);
+    }
 }
