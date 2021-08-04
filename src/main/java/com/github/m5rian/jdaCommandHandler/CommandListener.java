@@ -25,8 +25,8 @@ public class CommandListener extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger(ICommandService.class);
     private final ICommandService commandService; // A command service
     private final ISlashCommandService slashCommandService; // A command service for slash commands
-    public static final Map<String, Consumer> buttons = new HashMap<>();
-    public static final Map<String, Consumer> selectionMenus = new HashMap<>();
+    public static final Map<String, Consumer<ButtonClickEvent>> buttons = new HashMap<>();
+    public static final Map<String, Consumer<SelectionMenuEvent>> selectionMenus = new HashMap<>();
 
     /**
      * @param commandService A command service.
