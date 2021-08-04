@@ -24,7 +24,7 @@ public class CommandMessage {
     // Other
     private final CommandContext ctx;
     // Message
-    private String message = null;
+    private String message = "";
     // Embed
     private String title = null;
     private String thumbnail = null;
@@ -32,7 +32,7 @@ public class CommandMessage {
     private String author = null;
     private String hyperLink = null;
     private String authorAvatar = null;
-    private String description = null;
+    private String description = "";
     private List<MessageEmbed.Field> fields;
     private String image = null;
     private String footer = null;
@@ -323,17 +323,17 @@ public class CommandMessage {
 
             // Reply should mention the user
             if (mention) {
-                if (this.message != null && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
-                if (this.message != null && !embed.isEmpty())
+                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
+                if (!this.message.isEmpty() && !embed.isEmpty())
                     messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
-                if (this.message == null && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
+                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
             }
             // Reply shouldn't mention the user
             else {
-                if (this.message != null && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
-                if (this.message != null && !embed.isEmpty())
+                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
+                if (!this.message.isEmpty() && !embed.isEmpty())
                     messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
-                if (this.message == null && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
+                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
             }
 
             if (components.size() != 0) {
@@ -343,9 +343,9 @@ public class CommandMessage {
         // Send as normal message
         else {
             final MessageChannel channel = this.ctx.getChannel();
-            if (this.message != null && embed.isEmpty()) channel.sendMessage(this.message).queue();
-            if (this.message != null && !embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(embed.build()).queue();
-            if (this.message == null && !embed.isEmpty()) channel.sendMessageEmbeds(embed.build()).queue();
+            if (!this.message.isEmpty() && embed.isEmpty()) channel.sendMessage(this.message).queue();
+            if (!this.message.isEmpty() && !embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(embed.build()).queue();
+            if (this.message.isEmpty() && !embed.isEmpty()) channel.sendMessageEmbeds(embed.build()).queue();
         }
     }
 
