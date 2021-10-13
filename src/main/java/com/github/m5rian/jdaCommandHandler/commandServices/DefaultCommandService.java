@@ -6,8 +6,6 @@ import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.Everyone;
 import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
-import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
-import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandContext;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
