@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -32,6 +33,7 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     private final boolean ignoreSystem;
     private final boolean ignoreWebhooks;
     private final BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
+    private final BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
 
     /**
      * Constructor
@@ -48,7 +50,7 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
                                  boolean ignoreBots, boolean ignoreSystem, boolean ignoreWebhooks,
                                  List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
-                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler) {
+                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler, BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
 
@@ -65,7 +67,8 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
         commands.forEach(this::registerCommandClass); // Register all commands
         slashCommands.forEach(this::registerSlashCommandClass); // Register slashCommands
 
-        this.errorHandler = errorHandler; // Register slashCommands
+        this.errorHandler = errorHandler;
+        this.customCheck = customCheck;
 
         this.registerPermission(new Everyone()); // Register default role
     }
@@ -133,6 +136,10 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                         final String regex = "(?i)" + executor + "($|\\s[\\S\\s]*)"; // Command regex
                         // Message matches command regex
                         if (msg.matches(regex)) {
+                            if (this.customCheck != null) {
+                                if (!this.customCheck.apply(event, command)) continue;
+                            }
+
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
                             if (!commandArguments.equals("")) commandArguments = commandArguments.substring(1);
 

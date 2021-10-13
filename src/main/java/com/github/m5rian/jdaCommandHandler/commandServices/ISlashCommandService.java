@@ -106,6 +106,7 @@ public interface ISlashCommandService {
         restAction.queue(json -> {
             final JSONArray commands = new JSONArray(json);
             for (int i = 0; i < commands.length(); i++) {
+                System.out.println("Retrieved command by discord: " + commands.getJSONObject(i).toString());
                 final JSONObject command = commands.getJSONObject(i);
                 final String id = command.getString("id"); // Get id of command
                 // Remove not used variables by my command handler
@@ -114,6 +115,15 @@ public interface ISlashCommandService {
                 command.remove("type");
                 command.remove("application_id");
                 command.remove("version");
+
+                if (!command.isNull("options")) {
+                    final JSONArray options = command.getJSONArray("options");
+                    for (int i1 = 0; i1 < options.length(); i1++) {
+                        final JSONObject option = options.getJSONObject(i1);
+                        if (option.isNull("required")) option.put("required", false);
+                    }
+                }
+
                 final String name = command.getString("name");
 
                 // Try finding a matching slash command from my command handler

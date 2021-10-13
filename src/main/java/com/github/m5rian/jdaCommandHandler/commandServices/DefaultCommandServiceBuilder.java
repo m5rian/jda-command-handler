@@ -2,6 +2,7 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
+import com.github.m5rian.jdaCommandHandler.command.CommandData;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
@@ -10,10 +11,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @author Marian
@@ -26,12 +24,14 @@ public class DefaultCommandServiceBuilder {
     private String defaultPrefix;
     private Function<Guild, String> customPrefix;
     private boolean allowMention = false;
+
     private List<String> userBlacklist = new ArrayList<>();
 
     private boolean ignoreBots = false;
     private boolean ignoreSystem = false;
     private boolean ignoreWebhooks = false;
 
+    private BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
@@ -161,6 +161,16 @@ public class DefaultCommandServiceBuilder {
     }
 
     /**
+     * @param check A {@link Function<MessageReceivedEvent, Boolean>}, which is fired before the command gets executed.
+     *              If the returned value is false, the command execution will get interrupted.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder addCheck(BiFunction<MessageReceivedEvent, CommandData, Boolean> check) {
+        this.customCheck = check;
+        return this;
+    }
+
+    /**
      * Build the command service.
      *
      * @return Returns a finished {@link DefaultCommandService}.
@@ -181,7 +191,8 @@ public class DefaultCommandServiceBuilder {
 
                 this.userBlacklist,
 
-                this.errorHandler
+                this.errorHandler,
+                this.customCheck
         );
     }
 }
