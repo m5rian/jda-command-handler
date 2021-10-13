@@ -17,6 +17,7 @@ import java.util.function.*;
  * @author Marian
  * The builder for {@link DefaultCommandService}.
  */
+@SuppressWarnings("unused")
 public class DefaultCommandServiceBuilder {
     private final List<CommandHandler> commands = new ArrayList<>();
     private final List<CommandHandler> slashCommands = new ArrayList<>();
