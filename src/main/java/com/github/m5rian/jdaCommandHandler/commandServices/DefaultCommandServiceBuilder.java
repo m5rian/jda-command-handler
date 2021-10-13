@@ -3,6 +3,7 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
+import com.github.m5rian.jdaCommandHandler.command.CoolDown;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
@@ -33,6 +34,7 @@ public class DefaultCommandServiceBuilder {
 
     private BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
+    private BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
 
     /**
      * Set the default prefix.
@@ -161,6 +163,15 @@ public class DefaultCommandServiceBuilder {
     }
 
     /**
+     * @param cooldown {@link Consumer} which contains the {@link CoolDown} as a parameter.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder handleCoolDowns(BiConsumer<MessageReceivedEvent, CoolDown> cooldown) {
+        this.coolDownHandler = cooldown;
+        return this;
+    }
+
+    /**
      * @param check A {@link Function<MessageReceivedEvent, Boolean>}, which is fired before the command gets executed.
      *              If the returned value is false, the command execution will get interrupted.
      * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
@@ -192,6 +203,7 @@ public class DefaultCommandServiceBuilder {
                 this.userBlacklist,
 
                 this.errorHandler,
+                this.coolDownHandler,
                 this.customCheck
         );
     }
