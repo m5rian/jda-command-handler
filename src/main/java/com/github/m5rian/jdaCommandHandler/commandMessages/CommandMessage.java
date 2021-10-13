@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Component;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
@@ -44,6 +45,7 @@ public class CommandMessage {
 
     private boolean reply;
     private boolean mention;
+    private TextChannel channel = null;
 
     /**
      * Is called by a {@link CommandMessageFactory} to create an editable preset.
@@ -311,44 +313,54 @@ public class CommandMessage {
         return this;
     }
 
+    public CommandMessage setChannel(TextChannel channel) {
+        this.channel = channel;
+        return this;
+    }
+
     /**
      * Builds a message with a {@link CommandMessageFactory} and the later made changes.
      * This message would get send to the current channel.
      */
     public void send() {
         check(); // Check for various errors
-
         final EmbedBuilder embed = getEmbed(); // Get embed
-        // Reply to messages
-        if (reply) {
-            MessageAction messageAction = null;
+        MessageAction action = null;
 
+        // Custom channel is set
+        if (this.channel != null) {
+            if (!this.message.isEmpty() && embed.isEmpty()) action = this.channel.sendMessage(this.message);
+            if (!this.message.isEmpty() && !embed.isEmpty()) action = this.channel.sendMessage(this.message).setEmbeds(embed.build());
+            if (this.message.isEmpty() && !embed.isEmpty()) action = this.channel.sendMessageEmbeds(embed.build());
+        }
+        // Reply to messages
+        else if (reply) {
             // Reply should mention the user
             if (mention) {
-                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
+                if (!this.message.isEmpty() && embed.isEmpty()) action = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
                 if (!this.message.isEmpty() && !embed.isEmpty())
-                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
-                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
+                    action = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
+                if (this.message.isEmpty() && !embed.isEmpty()) action = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
             }
             // Reply shouldn't mention the user
             else {
-                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
+                if (!this.message.isEmpty() && embed.isEmpty()) action = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
                 if (!this.message.isEmpty() && !embed.isEmpty())
-                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
-                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
+                    action = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
+                if (this.message.isEmpty() && !embed.isEmpty()) action = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
             }
-
-            if (components.size() != 0) {
-                messageAction.setActionRow(this.components).queue();
-            } else messageAction.queue();
         }
         // Send as normal message
         else {
             final MessageChannel channel = this.ctx.getChannel();
-            if (!this.message.isEmpty() && embed.isEmpty()) channel.sendMessage(this.message).queue();
-            if (!this.message.isEmpty() && !embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(embed.build()).queue();
-            if (this.message.isEmpty() && !embed.isEmpty()) channel.sendMessageEmbeds(embed.build()).queue();
+            if (!this.message.isEmpty() && embed.isEmpty()) action = channel.sendMessage(this.message);
+            if (!this.message.isEmpty() && !embed.isEmpty()) action = channel.sendMessage(this.message).setEmbeds(embed.build());
+            if (this.message.isEmpty() && !embed.isEmpty()) action = channel.sendMessageEmbeds(embed.build());
         }
+
+        if (components.size() != 0) {
+            action.setActionRow(this.components).queue();
+        } else action.queue();
     }
 
     /**
@@ -359,38 +371,43 @@ public class CommandMessage {
      */
     public void send(Consumer<Message> success) {
         check(); // Check for various errors
-
         final EmbedBuilder embed = getEmbed(); // Get embed
-        // Reply to messages
-        if (reply) {
-            MessageAction messageAction = null;
+        MessageAction action = null;
 
+        // Custom channel is set
+        if (this.channel != null) {
+            if (!this.message.isEmpty() && embed.isEmpty()) action = this.channel.sendMessage(this.message);
+            if (!this.message.isEmpty() && !embed.isEmpty()) action = this.channel.sendMessage(this.message).setEmbeds(embed.build());
+            if (this.message.isEmpty() && !embed.isEmpty()) action = this.channel.sendMessageEmbeds(embed.build());
+        }
+        // Reply to messages
+        else if (reply) {
             // Reply should mention the user
             if (mention) {
-                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
+                if (!this.message.isEmpty() && embed.isEmpty()) action = ctx.getMessage().reply(this.message).mentionRepliedUser(true);
                 if (!this.message.isEmpty() && !embed.isEmpty())
-                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
-                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
+                    action = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(true);
+                if (this.message.isEmpty() && !embed.isEmpty()) action = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(true);
             }
             // Reply shouldn't mention the user
             else {
-                if (!this.message.isEmpty() && embed.isEmpty()) messageAction = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
+                if (!this.message.isEmpty() && embed.isEmpty()) action = ctx.getMessage().reply(this.message).mentionRepliedUser(false);
                 if (!this.message.isEmpty() && !embed.isEmpty())
-                    messageAction = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
-                if (this.message.isEmpty() && !embed.isEmpty()) messageAction = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
+                    action = ctx.getMessage().reply(this.message).setEmbeds(embed.build()).mentionRepliedUser(false);
+                if (this.message.isEmpty() && !embed.isEmpty()) action = ctx.getMessage().replyEmbeds(embed.build()).mentionRepliedUser(false);
             }
-
-            if (components.size() != 0) {
-                messageAction.setActionRow(this.components).queue(success);
-            } else messageAction.queue(success);
         }
         // Send as normal message
         else {
             final MessageChannel channel = this.ctx.getChannel();
-            if (!this.message.isEmpty() && embed.isEmpty()) channel.sendMessage(this.message).queue(success);
-            if (!this.message.isEmpty() && !embed.isEmpty()) channel.sendMessage(this.message).setEmbeds(embed.build()).queue(success);
-            if (this.message.isEmpty() && !embed.isEmpty()) channel.sendMessageEmbeds(embed.build()).queue(success);
+            if (!this.message.isEmpty() && embed.isEmpty()) action = channel.sendMessage(this.message);
+            if (!this.message.isEmpty() && !embed.isEmpty()) action = channel.sendMessage(this.message).setEmbeds(embed.build());
+            if (this.message.isEmpty() && !embed.isEmpty()) action = channel.sendMessageEmbeds(embed.build());
         }
+
+        if (components.size() != 0) {
+            action.setActionRow(this.components).queue(success);
+        } else action.queue(success);
     }
 
     /**
