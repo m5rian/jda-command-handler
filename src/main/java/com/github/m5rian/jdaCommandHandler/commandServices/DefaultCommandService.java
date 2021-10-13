@@ -87,6 +87,7 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
 
     @Override
     public void processCommandExecution(MessageReceivedEvent event) {
+        if (event.getAuthor().isBot()) return; // User is marked as a bot (Bot, System, Webhooks)
         if (this.userBlacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
         if (event.isFromGuild() && !event.getGuild().getSelfMember().hasPermission((GuildChannel) event.getChannel(), Permission.MESSAGE_WRITE))
             return;
