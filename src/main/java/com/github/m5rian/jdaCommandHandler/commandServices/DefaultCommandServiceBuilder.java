@@ -28,6 +28,10 @@ public class DefaultCommandServiceBuilder {
     private boolean allowMention = false;
     private List<String> userBlacklist = new ArrayList<>();
 
+    private boolean ignoreBots = false;
+    private boolean ignoreSystem = false;
+    private boolean ignoreWebhooks = false;
+
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
@@ -66,6 +70,39 @@ public class DefaultCommandServiceBuilder {
      */
     public DefaultCommandServiceBuilder allowMention() {
         this.allowMention = true;
+        return this;
+    }
+
+    /**
+     * Sets {@link DefaultCommandServiceBuilder#ignoreBots} to true.
+     * This will prevent bots from executing commands.
+     *
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder ignoreBots() {
+        this.ignoreBots = true;
+        return this;
+    }
+
+    /**
+     * Sets {@link DefaultCommandServiceBuilder#ignoreSystem} to true.
+     * This will prevent system messages from executing commands.
+     *
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder ignoreSystemMessages() {
+        this.ignoreSystem = true;
+        return this;
+    }
+
+    /**
+     * Sets {@link DefaultCommandServiceBuilder#ignoreWebhooks} to true.
+     * This will prevent webhooks from executing commands.
+     *
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder ignoreWebhooks() {
+        this.ignoreWebhooks = true;
         return this;
     }
 
@@ -134,6 +171,10 @@ public class DefaultCommandServiceBuilder {
                 this.defaultPrefix,
                 this.customPrefix,
                 this.allowMention,
+
+                this.ignoreBots,
+                this.ignoreSystem,
+                this.ignoreWebhooks,
 
                 this.commands,
                 this.slashCommands,

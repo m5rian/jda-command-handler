@@ -28,18 +28,25 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
+    private final boolean ignoreBots;
+    private final boolean ignoreSystem;
+    private final boolean ignoreWebhooks;
     private final BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
 
     /**
      * Constructor
      * This constructor builds the actual DefaultCommandService
      *
-     * @param defaultPrefix The default prefix, which is used when a no variable prefix is set.
-     *                      The default prefix is also used when you fire commands in the direct messages.
-     * @param customPrefix  A variable prefix, which can depend on each guild.
-     * @param allowMention  Should the bot respond on mentions too?
+     * @param defaultPrefix  The default prefix, which is used when a no variable prefix is set.
+     *                       The default prefix is also used when you fire commands in the direct messages.
+     * @param customPrefix   A variable prefix, which can depend on each guild.
+     * @param allowMention   Should the bot respond on mentions too?
+     * @param ignoreBots     Should bot messages be ignored?
+     * @param ignoreSystem   Should the system messages be ignored?
+     * @param ignoreWebhooks Should webhooks be ignored?
      */
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
+                                 boolean ignoreBots, boolean ignoreSystem, boolean ignoreWebhooks,
                                  List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
                                  BiConsumer<MessageReceivedEvent, Throwable> errorHandler) {
         // No default prefix set
@@ -48,6 +55,10 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
         this.defaultPrefix = defaultPrefix;
         this.customPrefix = customPrefix;
         this.allowMention = allowMention;
+
+        this.ignoreBots = ignoreBots;
+        this.ignoreSystem = ignoreSystem;
+        this.ignoreWebhooks = ignoreWebhooks;
         // Blacklist
         if (!userBlacklist.isEmpty()) this.userBlacklist.addAll(userBlacklist); // Add already blacklisted users
 
@@ -85,7 +96,9 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
 
     @Override
     public void processCommandExecution(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot()) return; // User is marked as a bot (Bot, System, Webhooks)
+        if (this.ignoreBots && event.getAuthor().isBot()) return; // User is marked as a bot
+        if (this.ignoreSystem && event.getAuthor().isSystem()) return; // User is marked as system account (community updates, ...)
+        if (this.ignoreWebhooks && event.getMessage().isWebhookMessage()) return; // Message is a webhook
         if (this.userBlacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
         if (event.isFromGuild() && !event.getGuild().getSelfMember().hasPermission((GuildChannel) event.getChannel(), Permission.MESSAGE_WRITE))
             return;
