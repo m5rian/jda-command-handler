@@ -7,7 +7,7 @@ import com.github.m5rian.jdaCommandHandler.Everyone;
 import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
 import com.github.m5rian.jdaCommandHandler.command.CoolDown;
-import com.github.m5rian.jdaCommandHandler.command.CoolDownData;
+import com.github.m5rian.jdaCommandHandler.command.CooldownTarget;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandContext;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
@@ -28,7 +28,7 @@ import java.util.function.Function;
 /**
  * A command service for default needs.
  */
-public class DefaultCommandService implements ICommandService, ISlashCommandService, IPermissionService, IBlacklistService, ICoolDownService {
+public class DefaultCommandService implements ICommandService, ISlashCommandService, IPermissionService, IBlacklistService, ICooldownService {
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
@@ -36,8 +36,9 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     private final boolean ignoreSystem;
     private final boolean ignoreWebhooks;
     private final BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
-    private final BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
     private final BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
+    private final CooldownTarget cooldownTarget;
+    private final BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
 
     /**
      * Constructor
@@ -54,8 +55,8 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
                                  boolean ignoreBots, boolean ignoreSystem, boolean ignoreWebhooks,
                                  List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
-                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler, BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler,
-                                 BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck) {
+                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler, BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck,
+                                 CooldownTarget cooldownTarget, BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
 
@@ -73,8 +74,10 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
         slashCommands.forEach(this::registerSlashCommandClass); // Register slashCommands
 
         this.errorHandler = errorHandler;
-        this.coolDownHandler = coolDownHandler;
         this.customCheck = customCheck;
+        // Cooldown
+        this.cooldownTarget = cooldownTarget;
+        this.coolDownHandler = coolDownHandler;
 
         this.registerPermission(new Everyone()); // Register default role
     }
@@ -144,18 +147,31 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                         // Message matches command regex
                         if (msg.matches(regex)) {
                             if (this.customCheck != null) {
-                                if (!this.customCheck.apply(event, command)) continue;
+                                if (!this.customCheck.apply(event, command)) break;
                             }
 
-                            long cooldown = command.getCommand().cooldown();
-                            if (cooldown != 0) {
-                                CoolDownData userCoolDownData = this.getUserCoolDownData(user); // User's cooldown data
-                                if (userCoolDownData.hasCoolDown(executor)) { // Check if user is on cooldown
-                                    coolDownHandler.accept(event, new CoolDown(userCoolDownData.getCoolDown(executor)));
-                                    continue;
+                            // Get cooldown
+                            if (this.cooldownTarget != CooldownTarget.NONE) {
+                                final CoolDown cooldown;
+                                if (this.cooldownTarget == CooldownTarget.GLOBAL) { // CooldownTarget == GLOBAL
+                                    cooldown = new CoolDown(this.getUserCooldown(user, command.getCommand(), this.cooldownTarget));
+                                } else { // CooldownTarget == GUILD
+                                    cooldown = new CoolDown(this.getMemberCooldown(event.getMember(), command.getCommand(), this.cooldownTarget));
                                 }
-                                userCoolDownData.addCoolDown(executor, cooldown);
-                                this.setUserCoolDownData(user, userCoolDownData);
+
+                                if (cooldown.isOnCooldown()) {
+                                    coolDownHandler.accept(event, cooldown);
+                                    break;
+                                }
+                            }
+
+                            // Add new cooldown
+                            if (this.cooldownTarget != CooldownTarget.NONE) {
+                                if (this.cooldownTarget == CooldownTarget.GLOBAL) { // CooldownTarget == GLOBAL
+                                    this.setUserCooldown(user, command.getCommand(), this.cooldownTarget);
+                                } else { // CooldownTarget == GUILD
+                                    this.setMemberCooldown(event.getMember(), command.getCommand(), this.cooldownTarget);
+                                }
                             }
 
                             String commandArguments = msg.substring(executor.length()); // Filter arguments

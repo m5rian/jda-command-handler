@@ -45,9 +45,9 @@ public @interface CommandEvent {
     Channel channel() default Channel.DEFAULT;
 
     /**
-     * Retrieves the cool down time of the command
+     * Retrieves the cooldown duration of the command.
      *
-     * @return The cool down time in seconds
+     * @return The cooldown duration in seconds.
      */
     long cooldown() default 0;
 

@@ -1,7 +1,7 @@
 package com.github.m5rian.jdaCommandHandler.command;
 
 /**
- * This is a data class which stores the expiration time of a command.
+ * Data class which represents a cooldown.
  */
 public class CoolDown {
     private final long milliseconds;
@@ -14,8 +14,15 @@ public class CoolDown {
     }
 
     /**
+     * @return Returns whether the cooldown expired.
+     */
+    public boolean isOnCooldown() {
+        return getCoolDown() < 0;
+    }
+
+    /**
      * @return the cool down (time remaining) in milliseconds.
-     * @see CoolDown#getPrettyCoolDown()
+     * @see CoolDown#getPretty().
      */
     public long getCoolDown() {
         return milliseconds - System.currentTimeMillis();
@@ -23,13 +30,13 @@ public class CoolDown {
 
     /**
      * @return the cool down (time remaining) in a pretty string format.
-     * @see CoolDown#getCoolDown()
+     * @see CoolDown#getCoolDown().
      */
-    public String getPrettyCoolDown() {
+    public String getPretty() {
         long seconds = (milliseconds - System.currentTimeMillis()) / 1000;
 
         return String.format("%02d Hours %02d Minutes %02d Seconds",
-                seconds / 3600, (seconds / 60) % 60, seconds % 60)
+                        seconds / 3600, (seconds / 60) % 60, seconds % 60)
                 .replaceAll("00 [a-zA-Z]+", "");
     }
 

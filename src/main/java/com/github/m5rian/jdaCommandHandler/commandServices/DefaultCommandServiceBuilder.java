@@ -4,6 +4,7 @@ import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
 import com.github.m5rian.jdaCommandHandler.command.CoolDown;
+import com.github.m5rian.jdaCommandHandler.command.CooldownTarget;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
@@ -34,6 +35,8 @@ public class DefaultCommandServiceBuilder {
 
     private BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
+
+    private CooldownTarget cooldownTarget = CooldownTarget.NONE;
     private BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
 
     /**
@@ -163,21 +166,30 @@ public class DefaultCommandServiceBuilder {
     }
 
     /**
-     * @param cooldown {@link Consumer} which contains the {@link CoolDown} as a parameter.
-     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
-     */
-    public DefaultCommandServiceBuilder handleCoolDowns(BiConsumer<MessageReceivedEvent, CoolDown> cooldown) {
-        this.coolDownHandler = cooldown;
-        return this;
-    }
-
-    /**
      * @param check A {@link Function<MessageReceivedEvent, Boolean>}, which is fired before the command gets executed.
      *              If the returned value is false, the command execution will get interrupted.
      * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
      */
     public DefaultCommandServiceBuilder addCheck(BiFunction<MessageReceivedEvent, CommandData, Boolean> check) {
         this.customCheck = check;
+        return this;
+    }
+
+    /**
+     * @param type A {@link CooldownTarget} used to check for user/member cooldowns.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder setCooldownType(CooldownTarget type) {
+        this.cooldownTarget = type;
+        return this;
+    }
+
+    /**
+     * @param cooldown {@link Consumer} which contains the {@link CoolDown} as a parameter.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder handleCoolDowns(BiConsumer<MessageReceivedEvent, CoolDown> cooldown) {
+        this.coolDownHandler = cooldown;
         return this;
     }
 
@@ -203,8 +215,10 @@ public class DefaultCommandServiceBuilder {
                 this.userBlacklist,
 
                 this.errorHandler,
-                this.coolDownHandler,
-                this.customCheck
+                this.customCheck,
+
+                this.cooldownTarget,
+                this.coolDownHandler
         );
     }
 }
