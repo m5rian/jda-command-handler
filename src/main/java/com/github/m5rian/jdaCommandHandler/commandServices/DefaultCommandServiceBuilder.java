@@ -3,6 +3,8 @@ package com.github.m5rian.jdaCommandHandler.commandServices;
 import com.github.m5rian.jdaCommandHandler.CommandHandler;
 import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
+import com.github.m5rian.jdaCommandHandler.command.CoolDown;
+import com.github.m5rian.jdaCommandHandler.command.CooldownTarget;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory;
 import com.github.m5rian.jdaCommandHandler.commandMessages.CommandUsageFactory;
 import net.dv8tion.jda.api.entities.Guild;
@@ -34,6 +36,9 @@ public class DefaultCommandServiceBuilder {
 
     private BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
     private BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
+
+    private CooldownTarget cooldownTarget = CooldownTarget.NONE;
+    private BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
 
     /**
      * Set the default prefix.
@@ -172,6 +177,24 @@ public class DefaultCommandServiceBuilder {
     }
 
     /**
+     * @param type A {@link CooldownTarget} used to check for user/member cooldowns.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder setCooldownType(CooldownTarget type) {
+        this.cooldownTarget = type;
+        return this;
+    }
+
+    /**
+     * @param cooldown {@link Consumer} which contains the {@link CoolDown} as a parameter.
+     * @return Returns {@link DefaultCommandServiceBuilder} for chaining purpose.
+     */
+    public DefaultCommandServiceBuilder handleCoolDowns(BiConsumer<MessageReceivedEvent, CoolDown> cooldown) {
+        this.coolDownHandler = cooldown;
+        return this;
+    }
+
+    /**
      * Build the command service.
      *
      * @return Returns a finished {@link DefaultCommandService}.
@@ -193,7 +216,10 @@ public class DefaultCommandServiceBuilder {
                 this.userBlacklist,
 
                 this.errorHandler,
-                this.customCheck
+                this.customCheck,
+
+                this.cooldownTarget,
+                this.coolDownHandler
         );
     }
 }

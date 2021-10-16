@@ -6,6 +6,8 @@ import com.github.m5rian.jdaCommandHandler.CommandUtils;
 import com.github.m5rian.jdaCommandHandler.Everyone;
 import com.github.m5rian.jdaCommandHandler.command.CommandContext;
 import com.github.m5rian.jdaCommandHandler.command.CommandData;
+import com.github.m5rian.jdaCommandHandler.command.CoolDown;
+import com.github.m5rian.jdaCommandHandler.command.CooldownTarget;
 import com.github.m5rian.jdaCommandHandler.exceptions.NotRegisteredException;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandContext;
 import com.github.m5rian.jdaCommandHandler.slashCommand.SlashCommandData;
@@ -13,6 +15,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -25,7 +28,7 @@ import java.util.function.Function;
 /**
  * A command service for default needs.
  */
-public class DefaultCommandService implements ICommandService, ISlashCommandService, IPermissionService, IBlacklistService {
+public class DefaultCommandService implements ICommandService, ISlashCommandService, IPermissionService, IBlacklistService, ICooldownService {
     private final String defaultPrefix;
     private final Function<Guild, String> customPrefix;
     private final boolean allowMention;
@@ -34,6 +37,8 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     private final boolean ignoreWebhooks;
     private final BiConsumer<MessageReceivedEvent, Throwable> errorHandler;
     private final BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck;
+    private final CooldownTarget cooldownTarget;
+    private final BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler;
 
     /**
      * Constructor
@@ -50,7 +55,8 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
     public DefaultCommandService(String defaultPrefix, Function<Guild, String> customPrefix, boolean allowMention,
                                  boolean ignoreBots, boolean ignoreSystem, boolean ignoreWebhooks,
                                  List<CommandHandler> commands, List<CommandHandler> slashCommands, List<String> userBlacklist,
-                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler, BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck) {
+                                 BiConsumer<MessageReceivedEvent, Throwable> errorHandler, BiFunction<MessageReceivedEvent, CommandData, Boolean> customCheck,
+                                 CooldownTarget cooldownTarget, BiConsumer<MessageReceivedEvent, CoolDown> coolDownHandler) {
         // No default prefix set
         if (defaultPrefix == null) throw new IllegalArgumentException("You need to specify a default prefix");
 
@@ -69,6 +75,9 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
 
         this.errorHandler = errorHandler;
         this.customCheck = customCheck;
+        // Cooldown
+        this.cooldownTarget = cooldownTarget;
+        this.coolDownHandler = coolDownHandler;
 
         this.registerPermission(new Everyone()); // Register default role
     }
@@ -99,10 +108,11 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
 
     @Override
     public void processCommandExecution(MessageReceivedEvent event) {
-        if (this.ignoreBots && event.getAuthor().isBot()) return; // User is marked as a bot
-        if (this.ignoreSystem && event.getAuthor().isSystem()) return; // User is marked as system account (community updates, ...)
+        final User user = event.getAuthor();
+        if (this.ignoreBots && user.isBot()) return; // User is marked as a bot
+        if (this.ignoreSystem && user.isSystem()) return; // User is marked as system account (community updates, ...)
         if (this.ignoreWebhooks && event.getMessage().isWebhookMessage()) return; // Message is a webhook
-        if (this.userBlacklist.contains(event.getAuthor().getId())) return; // User is on blacklist
+        if (this.userBlacklist.contains(user.getId())) return; // User is on blacklist
         if (event.isFromGuild() && !event.getGuild().getSelfMember().hasPermission((GuildChannel) event.getChannel(), Permission.MESSAGE_WRITE))
             return;
 
@@ -137,7 +147,31 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                         // Message matches command regex
                         if (msg.matches(regex)) {
                             if (this.customCheck != null) {
-                                if (!this.customCheck.apply(event, command)) continue;
+                                if (!this.customCheck.apply(event, command)) break;
+                            }
+
+                            // Check for cooldown
+                            if (this.cooldownTarget != CooldownTarget.NONE) {
+                                final CoolDown cooldown;
+                                if (this.cooldownTarget == CooldownTarget.GLOBAL) { // CooldownTarget == GLOBAL
+                                    cooldown = new CoolDown(this.getUserCooldown(user, command.getCommand(), this.cooldownTarget));
+                                } else { // CooldownTarget == GUILD
+                                    cooldown = new CoolDown(this.getMemberCooldown(event.getMember(), command.getCommand(), this.cooldownTarget));
+                                }
+
+                                if (cooldown.isOnCooldown()) {
+                                    coolDownHandler.accept(event, cooldown);
+                                    break;
+                                }
+                            }
+
+                            // Add new cooldown
+                            if (this.cooldownTarget != CooldownTarget.NONE) {
+                                if (this.cooldownTarget == CooldownTarget.GLOBAL) { // CooldownTarget == GLOBAL
+                                    this.setUserCooldown(user, command.getCommand(), this.cooldownTarget);
+                                } else { // CooldownTarget == GUILD
+                                    this.setMemberCooldown(event.getMember(), command.getCommand(), this.cooldownTarget);
+                                }
                             }
 
                             String commandArguments = msg.substring(executor.length()); // Filter arguments
