@@ -17,7 +17,7 @@ public class CoolDown {
      * @return Returns whether the cooldown expired.
      */
     public boolean isOnCooldown() {
-        return getCoolDown() < 0;
+        return getCoolDown() > 0;
     }
 
     /**

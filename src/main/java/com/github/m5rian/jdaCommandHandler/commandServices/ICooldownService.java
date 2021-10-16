@@ -73,7 +73,7 @@ public interface ICooldownService {
                 return 0L;
             }
 
-            return memberCommandSpecificCooldown.get(member.getId()).get(member.getGuild().getId()).get(command);
+            return memberCommandSpecificCooldown.get(member.getGuild().getId()).get(member.getId()).get(command);
         } else {
             if (!memberCoolDowns.containsKey(member.getGuild().getId())) return 0L;
             else return memberCoolDowns.get(member.getGuild().getId()).getOrDefault(member.getId(), 0L);
@@ -95,8 +95,9 @@ public interface ICooldownService {
     default void setMemberCooldown(Member member, CommandEvent command, CooldownTarget target) {
         if (target.commandSpecific) {
             if (!memberCommandSpecificCooldown.containsKey(member.getGuild().getId())) {
-                userCommandSpecificCooldowns.put(member.getGuild().getId(), new HashMap<>());
+                memberCommandSpecificCooldown.put(member.getGuild().getId(), new HashMap<>());
             }
+
             if (!memberCommandSpecificCooldown.get(member.getGuild().getId()).containsKey(member.getId())) {
                 memberCommandSpecificCooldown.get(member.getGuild().getId()).put(member.getId(), new HashMap<>());
             }
