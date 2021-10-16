@@ -45,6 +45,13 @@ public @interface CommandEvent {
     Channel channel() default Channel.DEFAULT;
 
     /**
+     * Retrieves the cooldown duration of the command.
+     *
+     * @return The cooldown duration in seconds.
+     */
+    long cooldown() default 0;
+
+    /**
      * This is not used for any technical backend operations.
      * <p>
      * This can be used in a {@link com.github.m5rian.jdaCommandHandler.commandMessages.CommandMessageFactory}
