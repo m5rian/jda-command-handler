@@ -150,7 +150,7 @@ public class DefaultCommandService implements ICommandService, ISlashCommandServ
                                 if (!this.customCheck.apply(event, command)) break;
                             }
 
-                            // Get cooldown
+                            // Check for cooldown
                             if (this.cooldownTarget != CooldownTarget.NONE) {
                                 final CoolDown cooldown;
                                 if (this.cooldownTarget == CooldownTarget.GLOBAL) { // CooldownTarget == GLOBAL
