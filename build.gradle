@@ -5,7 +5,7 @@ plugins {
 
 group = 'com.github.m5rian'
 archivesBaseName = 'JdaCommandHandler'
-version = '0.4.5'
+version = '0.5.0'
 
 sourceCompatibility = 1.16
 targetCompatibility = 1.16
