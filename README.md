@@ -1,8 +1,10 @@
 # 🪁 Command handler
+
 This library makes handling commands very easy.  
 It's simple to add aliases, required permissions or specifying the command for only one type.
 
 ## 🏷 Summary
+
 * [Installation](#-installation)
 * [Adding a basic command handler](#%EF%B8%8F-adding-a-basic-command-handler)
 * [Handling commands](#-handling-commands)
@@ -10,31 +12,38 @@ It's simple to add aliases, required permissions or specifying the command for o
 * [Dependencies](#-dependencies)
 
 ## 📀 Installation
+
 `VERSION:` ![version]
 <br/>
 <br/>
+
 ### **🐘 Gradle**
+
 ```gradle
 maven {
     url 'https://m5rian.jfrog.io/artifactory/java'
 }
 ```
+
 ```gradle
 maven {
    implementation group: 'com.github.m5rian', name: 'JdaCommandHandler', version: 'VERSION'
 }
 ```
 
-
 > **〽 Maven**
+
 ```xml
+
 <repository>
     <id>marian</id>
     <name>m5rian-java</name>
     <url>https://m5rian.jfrog.io/artifactory/java</url>
 </repository>
 ```
+
 ```xml
+
 <dependency>
     <groupId>com.github.m5rian</groupId>
     <artifactId>JdaCommandHandler</artifactId>
@@ -43,7 +52,9 @@ maven {
 ```
 
 ## 🏗️ Adding a basic command handler
+
 This example shows how you can create a `DefaultCommandService`. This **does not automatically register your commands**.
+
 ```java
 // Your main class
 public class Bot {
@@ -66,10 +77,16 @@ public class Bot {
     }
 }
 ```
-Now let's create some commands. Always remember to **implement the `CommandHandler`, if a class contains commands**.  
+
+Now let's create some commands. Always remember to **implement the `CommandHandler`, if a class contains commands**.
+
 ### ⛮ Handling commands
-Before writing in the command class you need to register the class in the command service. To do so use the command register methods, like `DefaultCommandServiceBuilder#registerCommandClass`.  
-After that's done, we create a command. You can create as many command methods as you want, but make sure your methods have the `CommandEvent` annotation.
+
+Before writing in the command class you need to register the class in the command service. To do so use the command register
+methods, like `DefaultCommandServiceBuilder#registerCommandClass`.  
+After that's done, we create a command. You can create as many command methods as you want, but make sure your methods have
+the `CommandEvent` annotation.
+
 ```java
 // A command class
 public class Ping implements CommandHandler {
@@ -84,8 +101,14 @@ public class Ping implements CommandHandler {
 
 }
 ```
+
+The [`CommandEvent`](https://github.com/M5rian/JdaCommandHandler/blob/master/src/main/java/com/github/m5rian/jdaCommandHandler/command/CommandEvent.java)
+annotation provides much more features that aliases, which aren't covered here. Please check them out by your own.
+
 ### ⛮ Handling slash commands
+
 Same for SlashCommands. To register one of them use the slash command specific register methods. Then do the following:
+
 ```java
 public class Ping implements CommandHandler {
 
@@ -100,6 +123,7 @@ public class Ping implements CommandHandler {
 ```
 
 ## 📌 Dependencies
+
 * [JDA](https://github.com/DV8FromTheWorld/JDA)
 * [Logback-classic](http://logback.qos.ch/)
 
