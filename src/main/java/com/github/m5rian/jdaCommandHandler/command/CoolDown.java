@@ -22,7 +22,6 @@ public class CoolDown {
 
     /**
      * @return the cool down (time remaining) in milliseconds.
-     * @see CoolDown#getPretty().
      */
     public long getCoolDown() {
         return milliseconds - System.currentTimeMillis();
@@ -30,7 +29,6 @@ public class CoolDown {
 
     /**
      * @return the cool down (time remaining) in a pretty string format.
-     * @see CoolDown#getCoolDown().
      */
     public String getPretty() {
         long seconds = (milliseconds - System.currentTimeMillis()) / 1000;
